@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Overview</title>
+<link rel="stylesheet" href="dashboard.css" />
+<style>
+    body { font-family: "Poppins", sans-serif; font-weight: 600; }
+    .dashboard-container { display:flex; justify-content:center; align-items:flex-start; min-height:100vh; background:linear-gradient(135deg, #e6f9e6, #c1f0c1); padding:40px 20px; }
+    .dashboard-card { background:#fff; border-radius:16px; padding:30px; width:100%; max-width:950px; box-shadow:0 8px 20px rgba(0,0,0,0.2); }
+    .dashboard-title { text-align:center; font-size:32px; font-weight:700; margin-bottom:8px; color:#2e7d32; }
+    .dashboard-subtitle { text-align:center; color:#444; margin-bottom:25px; font-size:16px; font-weight:500; }
+    .stats-box { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; margin-bottom:30px; }
+    .stat { background:#f1fff1; padding:20px; border-radius:12px; text-align:center; box-shadow:0 4px 10px rgba(0,0,0,0.1); }
+    .stat h3 { font-size:28px; margin-bottom:6px; color:#2e7d32; font-weight:700; }
+    .stat p { font-size:14px; color:#333; font-weight:500; }
+    .section-title { font-size:22px; margin:20px 0 15px; color:#2e7d32; font-weight:700; }
+    .projects-list { display:grid; gap:15px; }
+    .project-card { background:#ffffff; padding:15px; border-radius:12px; border:1px solid #d6e9d6; box-shadow:0 4px 10px rgba(0,0,0,0.05); transition:transform 0.2s ease; }
+    .project-card:hover { transform:translateY(-3px); }
+    .project-card h3 { margin-bottom:5px; color:#2e7d32; font-weight:700; }
+    .project-card p { color:#444; font-size:14px; font-weight:500; }
+    .btn-primary { width:100%; margin-top:20px; padding:14px; background:linear-gradient(to right, #2e7d32, #43a047); color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; transition: background 0.3s ease; }
+    .btn-primary:hover { background:linear-gradient(to right, #1b5e20, #2e7d32); }
+    .dashboard-link { text-align:center; margin-top:15px; }
+</style>
+</head>
+
+<body>
+<div class="dashboard-container">
+    <div class="dashboard-card">
+        <h1 class="dashboard-title">🌍 Overview</h1>
+        <p class="dashboard-subtitle">Quick summary of carbon projects and blockchain activity.</p>
+
+        <!-- Stats Section -->
+        <div class="stats-box">
+            <div class="stat">
+                <h3 id="total-projects">0</h3>
+                <p>Total Projects</p>
+            </div>
+            <div class="stat">
+                <h3 id="total-carbon">0</h3>
+                <p>Total Carbon Saved (tons)</p>
+            </div>
+            <div class="stat">
+                <h3 id="blockchain-balance">0</h3>
+                <p>Blockchain Balance (ETH)</p>
+            </div>
+        </div>
+
+        <!-- Recent Projects -->
+        <h2 class="section-title">Recent Projects</h2>
+        <div class="projects-list" id="recent-projects"></div>
+
+        <!-- Button to Dashboard -->
+        <div class="dashboard-link">
+            <a href="dashboard.html"><button class="btn-primary">Go to Dashboard</button></a>
+        </div>
+    </div>
+</div>
+
+<script>
+const token = localStorage.getItem('token');
+if(!token) window.location.href='login.html';
+
+// Fetch projects from backend
+async function loadOverview() {
+    try {
+        const res = await fetch('http://localhost:5001/api/projects', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.message || 'Failed to fetch projects');
+
+        const recentContainer = document.getElementById('recent-projects');
+        recentContainer.innerHTML = '';
+        let totalCarbon = 0;
+        data.slice(-3).reverse().forEach(p => {
+            const div = document.createElement('div');
+            div.className = 'project-card';
+            div.innerHTML = `<h3>🌱 ${p.name}</h3>
+                             <p>Description: ${p.description}</p>
+                             <p>Location: ${p.location}</p>
+                             <p>Carbon Saved: ${p.carbonSaved} tons</p>`;
+            recentContainer.appendChild(div);
+            totalCarbon += p.carbonSaved;
+        });
+
+        document.getElementById('total-projects').textContent = data.length;
+        document.getElementById('total-carbon').textContent = totalCarbon;
+    } catch(err) {
+        console.error(err);
+    }
+}
+
+// Fetch blockchain balance (optional)
+async function loadBlockchainBalance() {
+    try {
+        const res = await fetch('http://localhost:5001/api/blockchain/balance', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if(!res.ok) throw new Error(data.message || 'Failed to fetch blockchain balance');
+        document.getElementById('blockchain-balance').textContent = data.balance;
+    } catch(err) {
+        console.error(err);
+    }
+}
+
+loadOverview();
+loadBlockchainBalance();
+</script>
+</body>
+</html>

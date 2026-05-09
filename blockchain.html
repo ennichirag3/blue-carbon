@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blockchain – Blue Block</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+    body { font-family: "Poppins", sans-serif; font-weight: 600; margin: 0; background: linear-gradient(135deg, #e6f9e6, #c1f0c1);}
+    .dashboard-container { display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; padding: 40px 20px; }
+    .dashboard-card { background: #fff; border-radius: 20px; padding: 30px; width: 100%; max-width: 1100px; display: flex; gap: 30px; box-shadow: 0 8px 24px rgba(0,0,0,0.2);}
+    .card-left { flex: 2; }
+    .card-left h2, .card-left h3 { color: #2e7d32; margin-bottom: 12px; }
+    label { display: block; margin-top: 14px; margin-bottom: 6px; color: #333; font-weight: 600; }
+    input { width: 95%; padding: 12px; border-radius: 10px; border: 1px solid #ccc; margin-bottom: 12px; font-size: 15px; outline: none; transition: border 0.3s; }
+    input:focus { border-color: #2e7d32; }
+    .sign-btn { display: inline-block; background: #2e7d32; color: #fff; border: none; padding: 12px 20px; border-radius: 10px; font-weight: 600; margin-top: 8px; cursor: pointer; transition: background 0.3s, transform 0.2s;}
+    .sign-btn:hover { background: #1b5e20; transform: scale(1.03);}
+    #balanceDisplay { margin-top: 8px; color: #2e7d32; font-weight: 700; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.05);}
+    th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; font-size: 14px; }
+    th { background: #2e7d32; color: white; font-weight: 600; }
+    tr:nth-child(even) { background: #f7f7f7; }
+    .card-right { flex: 1; border-left: 2px solid #eee; padding-left: 20px; }
+    .card-right h2 { color: #2e7d32; }
+    .signup-btn { display: inline-block; margin-top: 20px; text-decoration: none; background: #2e7d32; color: #fff; padding: 12px 20px; border-radius: 10px; font-weight: 600; transition: background 0.3s, transform 0.2s; }
+    .signup-btn:hover { background: #1b5e20; transform: scale(1.03);}
+    .team-credit { margin-top: 30px; text-align: center; font-size: 0.9rem; opacity: 0.9; font-weight: 500; color: #444;}
+    @media (max-width:900px) { .dashboard-card { flex-direction: column; padding: 20px;} .card-right { border-left:none; border-top:2px solid #eee; padding-top:20px; padding-left:0; } }
+</style>
+</head>
+
+<body>
+
+<div class="dashboard-container">
+    <div class="dashboard-card">
+        <div class="card-left">
+            <h2>🔗 Blockchain Wallet</h2>
+            <label for="walletAddress">Wallet Address</label>
+            <input type="text" id="walletAddress" placeholder="0x..." required>
+            <button class="sign-btn" onclick="getBalance()">Get Balance</button>
+            <p id="balanceDisplay"></p>
+
+            <h3>💰 Transfer ETH / Carbon Credits</h3>
+            <label for="toAddress">To Address</label>
+            <input type="text" id="toAddress" placeholder="0x..." required>
+            <label for="amount">Amount</label>
+            <input type="number" id="amount" placeholder="Amount" required>
+            <button class="sign-btn" onclick="transferETH()">Send</button>
+
+            <h3>📜 Transaction History</h3>
+            <button class="sign-btn" onclick="fetchHistory()">Load All</button>
+            <table id="history-table">
+                <thead>
+                    <tr><th>From</th><th>To</th><th>Amount</th><th>Date</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="4" style="text-align:center; color:#777;">No transactions yet</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card-right">
+            <h2>🌱 Blockchain Dashboard</h2>
+            <p>Monitor wallet balances, transfer carbon credits, and track blockchain transactions securely.</p>
+            <a href="dashboard.html" class="signup-btn">← Back to Dashboard</a>
+            <p class="team-credit">💡 Team <b>Blue Block</b></p>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = "http://localhost:5001/api/blockchain";
+
+    async function getBalance() {
+        const wallet = document.getElementById('walletAddress').value.trim();
+        if (!wallet) return alert('Enter wallet address');
+        try {
+            const res = await fetch(`${API_BASE}/balance/${wallet}`);
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.message || 'Failed to fetch balance');
+            }
+            const data = await res.json();
+            document.getElementById('balanceDisplay').innerText = `Balance: ${data.balance ?? 0} ETH`;
+        } catch (err) {
+            console.error(err);
+            alert('❌ ' + err.message);
+            document.getElementById('balanceDisplay').innerText = '';
+        }
+    }
+
+    async function transferETH() {
+        const to = document.getElementById('toAddress').value.trim();
+        const amount = parseFloat(document.getElementById('amount').value);
+        if (!to || !amount) return alert('Enter all fields correctly');
+        try {
+            const res = await fetch(`${API_BASE}/transfer`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ toAddress: to, amount })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Transfer failed');
+            alert('✅ Transfer successful');
+            fetchHistory();
+        } catch (err) {
+            console.error(err);
+            alert('❌ ' + err.message);
+        }
+    }
+
+    async function fetchHistory() {
+        try {
+            const res = await fetch(`${API_BASE}/history`);
+            if (!res.ok) throw new Error('Failed to fetch transaction history');
+            const transactions = await res.json();
+            const tbody = document.querySelector('#history-table tbody');
+            tbody.innerHTML = '';
+            if (!transactions || transactions.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#777;">No transactions yet</td></tr>`;
+                return;
+            }
+            transactions.forEach(tx => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${tx.from || 'N/A'}</td>
+                                <td>${tx.to || 'N/A'}</td>
+                                <td>${tx.amount}</td>
+                                <td>${new Date(tx.timestamp || Date.now()).toLocaleString()}</td>`;
+                tbody.appendChild(tr);
+            });
+        } catch (err) {
+            console.error(err);
+            document.querySelector('#history-table tbody').innerHTML =
+                `<tr><td colspan="4" style="text-align:center; color:red;">Failed to load transactions</td></tr>`;
+        }
+    }
+</script>
+
+</body>
+</html>

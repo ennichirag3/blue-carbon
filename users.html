@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Users – Blue Block</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Poppins", sans-serif;
+            background: linear-gradient(135deg, #e6f9e6, #c1f0c1);
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 1000px;
+            width: 100%;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 32px;
+            color: #2e7d32;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+            font-size: 14px;
+        }
+
+        th {
+            background: #2e7d32;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .back-link {
+            display: inline-block;
+            text-align: center;
+            margin-top: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            color: #fff;
+            background: #2e7d32;
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: 0.3s;
+        }
+
+        .back-link:hover {
+            background: #1b4f20;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="dashboard-container">
+        <div class="dashboard-card">
+            <h1>👥 Users</h1>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Wallet Address</th>
+                    </tr>
+                </thead>
+                <tbody id="usersTableBody">
+                    <tr>
+                        <td colspan="3" style="text-align:center; color:#555;">Loading users...</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Fixed Back to Dashboard link -->
+            <a href="dashboard.html" class="back-link">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:5001/api/users";
+
+        async function loadUsers() {
+            try {
+                const res = await fetch(API_URL);
+                const users = await res.json();
+
+                const tbody = document.getElementById("usersTableBody");
+                tbody.innerHTML = "";
+
+                if (!users || users.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#777;">No users found.</td></tr>`;
+                    return;
+                }
+
+                users.forEach(u => {
+                    const [local, domain] = u.email.split("@");
+                    const maskedEmail = local.length > 2 ? `${local.slice(0,2)}***${local.slice(-1)}@${domain}` : `${local[0]}***@${domain}`;
+
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${u.name}</td>
+                        <td>${maskedEmail}</td>
+                        <td>${u.walletAddress}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+            } catch (err) {
+                console.error("Error fetching users:", err);
+                document.getElementById("usersTableBody").innerHTML =
+                    `<tr><td colspan="3" style="text-align:center; color:red;">Failed to load users</td></tr>`;
+            }
+        }
+
+        // Initial load
+        loadUsers();
+    </script>
+</body>
+
+</html>

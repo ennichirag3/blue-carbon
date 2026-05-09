@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Add Project</title>
+<style>
+body { font-family: "Poppins", sans-serif; font-weight: 600; }
+.dashboard-container { display:flex; justify-content:center; align-items:flex-start; min-height:100vh; background:linear-gradient(135deg, #e6f9e6, #c1f0c1); padding:40px 20px; }
+.dashboard-card { background:#fff; border-radius:16px; padding:30px; width:100%; max-width:800px; box-shadow:0 8px 20px rgba(0,0,0,0.2); }
+.dashboard-title { text-align:center; font-size:32px; font-weight:700; margin-bottom:8px; color:#2e7d32; }
+.dashboard-subtitle { text-align:center; color:#444; margin-bottom:25px; font-size:16px; font-weight:500; }
+.form-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:15px; margin-bottom:25px; }
+.form-grid input, .form-grid textarea { padding:12px; border-radius:10px; border:1px solid #ccc; font-size:14px; font-weight:500; width:100%; }
+.form-grid input:focus, .form-grid textarea:focus { border-color:#2e7d32; outline:none; box-shadow:0 0 5px #a5d6a7; }
+textarea { grid-column:span 2; resize:none; min-height:100px; }
+.btn-primary { width:100%; padding:14px; background:linear-gradient(to right,#2e7d32,#43a047); color:#fff; border:none; border-radius:10px; font-size:16px; font-weight:700; cursor:pointer; transition: background 0.3s ease; margin-top:10px; }
+.btn-primary:hover { background:linear-gradient(to right,#1b5e20,#2e7d32); }
+.dashboard-link { text-align:center; margin-top:15px; }
+.dashboard-link a { text-decoration:none; font-weight:600; color:#2e7d32; }
+</style>
+</head>
+
+<body>
+<div class="dashboard-container">
+    <div class="dashboard-card">
+        <h1 class="dashboard-title">🌱 Add New Project</h1>
+        <p class="dashboard-subtitle">Enter project details to contribute to carbon savings.</p>
+
+        <form id="add-project-form">
+            <div class="form-grid">
+                <input type="text" id="project-name" placeholder="Project Name" required />
+                <input type="text" id="project-location" placeholder="Location" required />
+                <input type="number" id="carbon-saved" placeholder="Carbon Saved (tons)" required />
+                <textarea id="project-description" placeholder="Description" required></textarea>
+            </div>
+            <button type="submit" class="btn-primary">➕ Add Project</button>
+        </form>
+
+        <div class="dashboard-link">
+            <a href="dashboard.html">← Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<script>
+const token = localStorage.getItem('token');
+if (!token) window.location.href = 'login.html';
+
+document.getElementById("add-project-form").addEventListener("submit", async function(e) {
+    e.preventDefault();
+
+    const projectData = {
+        name: document.getElementById("project-name").value,
+        location: document.getElementById("project-location").value,
+        carbonSaved: Number(document.getElementById("carbon-saved").value),
+        description: document.getElementById("project-description").value
+    };
+
+    try {
+        const res = await fetch('http://localhost:5001/api/projects', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(projectData)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.message || 'Failed to add project');
+
+        alert("✅ Project Added Successfully!");
+        document.getElementById("add-project-form").reset();
+
+    } catch(err) {
+        console.error(err);
+        alert("❌ Error: " + err.message);
+    }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – Blue Block</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      font-weight: 500;
+      margin: 0;
+      background: linear-gradient(135deg, #e6f9e6, #c1f0c1);
+    }
+    .dashboard-container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .dashboard-card {
+      background: white;
+      border-radius: 16px;
+      padding: 30px;
+      max-width: 1000px;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      position: relative;
+    }
+    /* Logout Button */
+    #logoutBtn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: #e53935;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    #logoutBtn:hover {
+      background: #c62828;
+    }
+    h1 {
+      text-align: center;
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      color: #2e7d32;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-around;
+      margin: 20px 0;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .stat-box {
+      background: #f5f5f5;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      width: 200px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .stat-box h2 {
+      margin: 0;
+      font-size: 28px;
+      color: #2e7d32;
+    }
+    .stat-box p {
+      margin: 5px 0 0;
+      font-size: 14px;
+      color: #555;
+    }
+    .projects-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 15px;
+      margin-top: 25px;
+    }
+    .project-card {
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .project-card h3 {
+      margin: 0 0 8px;
+      color: #2e7d32;
+    }
+    .project-card p {
+      margin: 2px 0;
+      font-size: 14px;
+    }
+    .nav-links {
+      margin-top: 25px;
+      text-align: center;
+    }
+    .nav-links a {
+      text-decoration: none;
+      font-weight: 600;
+      color: #2e7d32;
+      margin: 0 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-container">
+    <div class="dashboard-card">
+      <!-- Logout Button -->
+      <button id="logoutBtn">Log Out</button>
+
+      <h1>📊 Dashboard</h1>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat-box">
+          <h2 id="projectCount">0</h2>
+          <p>Total Projects</p>
+        </div>
+        <div class="stat-box">
+          <h2 id="carbonTotal">0</h2>
+          <p>Carbon Saved (tons)</p>
+        </div>
+      </div>
+
+      <!-- Projects List -->
+      <h2 style="color:#2e7d32; margin-top:10px;">🌱 Recent Projects</h2>
+      <div class="projects-list" id="projectsList">
+        <p style="text-align:center; color:#555;">Loading projects...</p>
+      </div>
+
+      <!-- Navigation -->
+      <div class="nav-links">
+        <a href="addproject.html">➕ Add Project</a>
+        <a href="allprojects.html">📂 View All Projects</a>
+        <a href="blockchain.html">🔗 Blockchain</a>
+        <a href="users.html">👥 Users</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = "http://localhost:5001/api/projects";
+
+    // Logout functionality
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      sessionStorage.clear();
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    });
+
+    async function loadDashboard() {
+      try {
+        const res = await fetch(API_URL);
+        const projects = await res.json();
+
+        const projectCount = projects.length;
+        const carbonTotal = projects.reduce((sum, p) => sum + (p.carbonSaved || 0), 0);
+
+        document.getElementById("projectCount").textContent = projectCount;
+        document.getElementById("carbonTotal").textContent = carbonTotal;
+
+        const list = document.getElementById("projectsList");
+        list.innerHTML = "";
+
+        if (projects.length === 0) {
+          list.innerHTML = `<p style="color:#555; text-align:center;">No projects found. Add one above ⬆️</p>`;
+          return;
+        }
+
+        // Show latest 3 projects
+        projects.slice(-3).reverse().forEach(p => {
+          const div = document.createElement("div");
+          div.className = "project-card";
+          div.innerHTML = `
+            <h3>${p.name}</h3>
+            <p>${p.description}</p>
+            <p><strong>📍 Location:</strong> ${p.location}</p>
+            <p><strong>🌱 Carbon Saved:</strong> ${p.carbonSaved} tons</p>
+          `;
+          list.appendChild(div);
+        });
+
+      } catch (err) {
+        console.error("❌ Error loading dashboard:", err);
+        document.getElementById("projectsList").innerHTML =
+          `<p style="color:red; text-align:center;">⚠️ Failed to load projects</p>`;
+      }
+    }
+
+    loadDashboard();
+  </script>
+</body>
+</html>
