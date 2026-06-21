@@ -59,7 +59,7 @@ document.getElementById("add-project-form").addEventListener("submit", async fun
     };
 
     try {
-        const res = await fetch('http://localhost:5001/api/projects', {
+        const res = await fetch('https://blue-carbon-f3kd.onrender.com/api/projects', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

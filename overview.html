@@ -98,7 +98,7 @@ async function loadOverview() {
 // Fetch blockchain balance (optional)
 async function loadBlockchainBalance() {
     try {
-        const res = await fetch('http://localhost:5001/api/blockchain/balance', {
+        const res = await fetch('https://blue-carbon-f3kd.onrender.com/api/blockchain/balance', {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const data = await res.json();
