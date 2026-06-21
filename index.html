@@ -57,7 +57,7 @@
             const password = document.getElementById("password").value;
 
             try {
-                const res = await fetch("https://blue-carbon-f3kd.onrender.com/api/users/login", {
+                const res = await fetch("https://blue-carbon-f3kd.onrender.com/api/users/index", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password })
