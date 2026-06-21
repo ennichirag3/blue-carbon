@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register – Blue Block</title>
+    <style>
+        body { font-family: "Poppins", sans-serif; font-weight:600; display:flex; justify-content:center; align-items:center; min-height:100vh; background: linear-gradient(135deg, #e6f9e6, #c1f0c1); padding:20px; }
+        .register-box { background:#fff; padding:35px; border-radius:16px; width:100%; max-width:420px; box-shadow:0 8px 20px rgba(0,0,0,0.2); }
+        .register-title { text-align:center; font-size:30px; font-weight:700; margin-bottom:10px; color:#2e7d32; }
+        .register-subtitle { text-align:center; font-size:15px; margin-bottom:25px; color:#444; font-weight:500; }
+        form label { display:block; font-size:14px; margin-bottom:6px; color:#333; }
+        form input { width:100%; padding:12px; border:1px solid #ccc; border-radius:10px; margin-bottom:18px; font-size:14px; font-weight:500; }
+        form input:focus { border:1px solid #2e7d32; outline:none; box-shadow:0 0 6px rgba(46,125,50,0.4); }
+        .btn-register { width:100%; padding:12px; background:linear-gradient(to right,#2e7d32,#4caf50); border:none; border-radius:10px; color:#fff; font-size:16px; cursor:pointer; transition:0.3s; font-weight:600; }
+        .btn-register:hover { background:linear-gradient(to right,#1b5e20,#388e3c); }
+        .login-link { text-align:center; margin-top:18px; font-size:14px; font-weight:500; }
+        .login-link a { color:#2e7d32; text-decoration:none; font-weight:600; }
+        .error { color: red; font-size: 14px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="register-box">
+        <h1 class="register-title">📝 Register</h1>
+        <p class="register-subtitle">Create your account to get started</p>
+
+        <form id="registerForm">
+            <label for="name">Full Name</label>
+            <input type="text" id="name" placeholder="Enter your full name" required />
+
+            <label for="email">Email Address</label>
+            <input type="email" id="email" placeholder="Enter your email" required />
+
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Enter your password" required />
+
+            <label for="wallet">Wallet Address</label>
+            <input type="text" id="wallet" placeholder="Enter your wallet address" required />
+
+            <button type="submit" class="btn-register">Register</button>
+        </form>
+
+        <div class="login-link">
+            Already have an account? <a href="login.html">Login</a>
+        </div>
+        <div class="error" id="registerError"></div>
+    </div>
+
+    <script>
+        const registerForm = document.getElementById("registerForm");
+        const registerError = document.getElementById("registerError");
+
+        registerForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            registerError.textContent = "";
+
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            const walletAddress = document.getElementById("wallet").value;
+
+            try {
+                const res = await fetch("https://blue-carbon-f3kd.onrender.com/api/users/register", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email, password, walletAddress })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    registerError.textContent = data.message || "Something went wrong. Try again later.";
+                    return;
+                }
+
+                alert("Registration successful! You can now login.");
+                window.location.href = "login.html";
+            } catch (err) {
+                registerError.textContent = "Server error. Try again later.";
+                console.error(err);
+            }
+        });
+    </script>
+</body>
+</html>
