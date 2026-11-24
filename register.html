@@ -58,6 +58,7 @@
   </div>
 
   <script src="client-api.js"></script>
+  <script src="page-transitions.js"></script>
   <script>
     const registerForm = document.getElementById("registerForm");
     const regError = document.getElementById("regError");
@@ -82,14 +83,14 @@
         localStorage.setItem("token", data.token);
         localStorage.setItem("user", JSON.stringify(data.user));
 
-        // Smooth 3D exit transition
+        // 3D Motion Warp Transition into platform
         const card = document.getElementById("registerCard");
-        card.style.transform = "perspective(1200px) rotateX(-6deg) translateY(-20px) scale(0.96)";
-        card.style.opacity = "0";
+        card.classList.add("login-warp-3d");
+        if (window.play3DWarpSound) window.play3DWarpSound();
 
         setTimeout(() => {
           window.location.href = "dashboard.html";
-        }, 300);
+        }, 420);
 
       } catch (err) {
         regError.textContent = err.message || "Registration failed. Try again.";
