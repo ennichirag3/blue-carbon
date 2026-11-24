@@ -46,23 +46,30 @@ router.get("/status", async (req, res) => {
 router.get("/balance/:address", async (req, res) => {
   try {
     const { address } = req.params;
-    if (!isEthAddress(address)) {
-      return res.status(400).json({ message: "Invalid Ethereum address format (must be 0x followed by 40 hex characters)" });
-    }
+    const cleanAddr = (address || "").toLowerCase().trim();
 
-    // Try live RPC first
-    const rpcBalanceHex = await callRpc("eth_getBalance", [address, "latest"]);
+    // Try live RPC first if configured
+    const rpcBalanceHex = await callRpc("eth_getBalance", [cleanAddr, "latest"]);
     if (rpcBalanceHex) {
       const balanceWei = BigInt(rpcBalanceHex);
       const balanceEth = (Number(balanceWei) / 1e18).toFixed(4);
-      return res.json({ address, balance: balanceEth, mode: "live" });
+      return res.json({ address: cleanAddr, balance: balanceEth, mode: "live" });
     }
 
-    // SQLite lookup or fallback demo balance
-    const user = db.prepare("SELECT balance FROM users WHERE LOWER(walletAddress) = LOWER(?)").get(address);
-    const balance = user ? Number(user.balance).toFixed(4) : "234.4200";
+    // SQLite lookup
+    let user = db.prepare("SELECT balance FROM users WHERE LOWER(walletAddress) = LOWER(?)").get(cleanAddr);
+    if (!user) {
+      // Auto-initialize wallet in SQLite
+      const initialBalance = cleanAddr === "0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7" ? 234.4200 : 124.5000;
+      db.prepare(`
+        INSERT INTO users (name, email, password, walletAddress, role, balance)
+        VALUES (?, ?, ?, ?, 'user', ?)
+      `).run("Wallet Holder", `${cleanAddr.slice(0, 10)}@bluecarbon.io`, "placeholder", cleanAddr, initialBalance);
+      user = { balance: initialBalance };
+    }
 
-    res.json({ address, balance, mode: "cloud-autonomous" });
+    const balance = Number(user.balance).toFixed(4);
+    res.json({ address: cleanAddr, balance, mode: "cloud-autonomous" });
   } catch (err) {
     console.error("❌ Balance error:", err);
     res.status(500).json({ message: "Failed to fetch balance", error: err.message });
@@ -74,8 +81,8 @@ router.post("/transfer", async (req, res) => {
   try {
     const { fromAddress, toAddress, amount, tokenSymbol, note } = req.body;
 
-    if (!toAddress || !isEthAddress(toAddress)) {
-      return res.status(400).json({ message: "Invalid recipient Ethereum address (0x...)" });
+    if (!toAddress) {
+      return res.status(400).json({ message: "Recipient address is required" });
     }
 
     const numAmount = Number(amount);
@@ -83,9 +90,29 @@ router.post("/transfer", async (req, res) => {
       return res.status(400).json({ message: "Amount must be a positive number" });
     }
 
-    const sender = fromAddress && isEthAddress(fromAddress)
-      ? fromAddress.toLowerCase()
-      : "0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7";
+    const sender = (fromAddress || "").trim().toLowerCase() || "0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7";
+    const recipient = toAddress.trim().toLowerCase();
+
+    // Ensure sender exists in DB
+    let senderRow = db.prepare("SELECT balance FROM users WHERE LOWER(walletAddress) = LOWER(?)").get(sender);
+    if (!senderRow) {
+      db.prepare("INSERT INTO users (name, email, password, walletAddress, role, balance) VALUES (?, ?, ?, ?, 'user', 124.5000)")
+        .run("Sender", `${sender.slice(0, 10)}@bluecarbon.io`, "placeholder", sender);
+      senderRow = { balance: 124.5000 };
+    }
+
+    if (numAmount > Number(senderRow.balance)) {
+      return res.status(400).json({
+        message: `Insufficient balance! Current balance is ${Number(senderRow.balance).toFixed(4)} ${tokenSymbol || 'BCX'}`
+      });
+    }
+
+    // Ensure recipient exists in DB
+    let recipientRow = db.prepare("SELECT balance FROM users WHERE LOWER(walletAddress) = LOWER(?)").get(recipient);
+    if (!recipientRow) {
+      db.prepare("INSERT INTO users (name, email, password, walletAddress, role, balance) VALUES (?, ?, ?, ?, 'user', 0)")
+        .run("Recipient", `${recipient.slice(0, 10)}@bluecarbon.io`, "placeholder", recipient);
+    }
 
     const txHash = generateTxHash();
     const blockNumber = Math.floor(19280000 + Math.random() * 50000);
@@ -98,7 +125,7 @@ router.post("/transfer", async (req, res) => {
 
     insertTx.run(
       sender,
-      toAddress.toLowerCase(),
+      recipient,
       numAmount,
       tokenSymbol || "BCX",
       txHash,
@@ -106,21 +133,24 @@ router.post("/transfer", async (req, res) => {
       note || "Blue Carbon Tokenized Credit Transfer"
     );
 
-    // Update balances
+    // Deduct sender balance and add to recipient
     db.prepare("UPDATE users SET balance = MAX(0, balance - ?) WHERE LOWER(walletAddress) = LOWER(?)")
       .run(numAmount, sender);
 
     db.prepare("UPDATE users SET balance = balance + ? WHERE LOWER(walletAddress) = LOWER(?)")
-      .run(numAmount, toAddress.toLowerCase());
+      .run(numAmount, recipient);
+
+    const updatedSender = db.prepare("SELECT balance FROM users WHERE LOWER(walletAddress) = LOWER(?)").get(sender);
 
     res.json({
       message: "Transfer successful ✅",
       txHash,
       blockNumber,
       from: sender,
-      to: toAddress.toLowerCase(),
+      to: recipient,
       amount: numAmount,
-      tokenSymbol: tokenSymbol || "BCX"
+      tokenSymbol: tokenSymbol || "BCX",
+      newBalance: Number(updatedSender.balance).toFixed(4)
     });
   } catch (err) {
     console.error("❌ Transfer error:", err);

@@ -248,36 +248,195 @@ class ClientAPI {
     return { qrCode, url: projectURL };
   }
 
-  // --- BLOCKCHAIN ---
-  async getBalance(address) {
+  // --- INTERNAL BALANCE TRACKING HELPERS ---
+  _getLocalBalances() {
     try {
-      const res = await fetch(`/api/blockchain/balance/${address}`);
-      if (res.ok) {
-        return await res.json();
-      }
+      const stored = localStorage.getItem("bc_balances");
+      if (stored) return JSON.parse(stored);
     } catch (e) {}
-    return { address, balance: "124.5000", mode: "local-resilient" };
+
+    const initial = {
+      "0x89205a3a3b2a69de6dbf7f01ed13b2108b2c43e7": 234.42,
+      "0x70997970c51812dc3a010c7d01b50e0d17dc79c8": 84.15
+    };
+    try {
+      localStorage.setItem("bc_balances", JSON.stringify(initial));
+    } catch (e) {}
+    return initial;
   }
 
-  async transfer(toAddress, amount, tokenSymbol = "BCX") {
+  _saveLocalBalances(balances) {
+    try {
+      localStorage.setItem("bc_balances", JSON.stringify(balances));
+    } catch (e) {}
+  }
+
+  _syncUserBalance(walletAddress, newBalance) {
+    if (!walletAddress) return;
+    const clean = walletAddress.toLowerCase();
+
+    // Update session user in localStorage
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const u = JSON.parse(storedUser);
+        if (u.walletAddress && u.walletAddress.toLowerCase() === clean) {
+          u.balance = newBalance;
+          localStorage.setItem("user", JSON.stringify(u));
+        }
+      } catch (e) {}
+    }
+
+    // Update in registered user list
+    const users = JSON.parse(localStorage.getItem("bc_users") || "[]");
+    let changed = false;
+    users.forEach(u => {
+      if (u.walletAddress && u.walletAddress.toLowerCase() === clean) {
+        u.balance = newBalance;
+        changed = true;
+      }
+    });
+    if (changed) {
+      localStorage.setItem("bc_users", JSON.stringify(users));
+    }
+  }
+
+  // --- BLOCKCHAIN ---
+  async getBalance(address) {
+    if (!address) return { address: "", balance: "0.0000" };
+    const cleanAddr = address.toLowerCase().trim();
+
+    try {
+      const res = await fetch(`/api/blockchain/balance/${cleanAddr}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.balance !== undefined) {
+          const balances = this._getLocalBalances();
+          balances[cleanAddr] = parseFloat(data.balance);
+          this._saveLocalBalances(balances);
+          this._syncUserBalance(cleanAddr, balances[cleanAddr]);
+          return data;
+        }
+      }
+    } catch (e) {}
+
+    // Resilient local dynamic balance
+    const balances = this._getLocalBalances();
+    if (balances[cleanAddr] === undefined) {
+      // Check if user object in localStorage or bc_users has initial balance
+      let foundBal = null;
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        try {
+          const u = JSON.parse(storedUser);
+          if (u.walletAddress && u.walletAddress.toLowerCase() === cleanAddr && u.balance !== undefined) {
+            foundBal = Number(u.balance);
+          }
+        } catch (e) {}
+      }
+      if (foundBal === null) {
+        const users = JSON.parse(localStorage.getItem("bc_users") || "[]");
+        const matched = users.find(u => u.walletAddress && u.walletAddress.toLowerCase() === cleanAddr);
+        if (matched && matched.balance !== undefined) {
+          foundBal = Number(matched.balance);
+        }
+      }
+
+      balances[cleanAddr] = (foundBal !== null && !isNaN(foundBal)) ? foundBal : 124.50;
+      this._saveLocalBalances(balances);
+    }
+
+    const currentBal = Number(balances[cleanAddr]).toFixed(4);
+    return { address: cleanAddr, balance: currentBal, mode: "local-resilient" };
+  }
+
+  async transfer(toAddress, amount, tokenSymbol = "BCX", fromAddress = null) {
+    const numAmount = parseFloat(amount);
+    if (!numAmount || isNaN(numAmount) || numAmount <= 0) {
+      throw new Error("Amount must be a positive number.");
+    }
+
+    if (!toAddress || toAddress.trim().length < 3) {
+      throw new Error("Recipient address is required.");
+    }
+
+    // Determine sender address
+    let sender = fromAddress;
+    if (!sender) {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        try {
+          const u = JSON.parse(stored);
+          sender = u.walletAddress;
+        } catch (e) {}
+      }
+    }
+    if (!sender) {
+      sender = "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7";
+    }
+
+    const cleanSender = sender.toLowerCase().trim();
+    const cleanTo = toAddress.toLowerCase().trim();
+
+    // Check sender balance first!
+    const senderBalObj = await this.getBalance(cleanSender);
+    const senderBal = parseFloat(senderBalObj.balance);
+    if (numAmount > senderBal) {
+      throw new Error(`Insufficient balance! Your current balance is ${senderBal.toFixed(4)} ${tokenSymbol}.`);
+    }
+
+    // Try backend API first
     try {
       const res = await fetch("/api/blockchain/transfer", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ toAddress, amount, tokenSymbol })
+        body: JSON.stringify({ fromAddress: sender, toAddress, amount: numAmount, tokenSymbol })
       });
       if (res.ok) {
-        return await res.json();
+        const data = await res.json();
+        const balances = this._getLocalBalances();
+        const newSenderBal = Math.max(0, senderBal - numAmount);
+        balances[cleanSender] = newSenderBal;
+        balances[cleanTo] = (balances[cleanTo] !== undefined ? Number(balances[cleanTo]) : 124.50) + numAmount;
+        this._saveLocalBalances(balances);
+        this._syncUserBalance(cleanSender, newSenderBal);
+        return data;
+      } else {
+        const errJson = await res.json().catch(() => null);
+        if (errJson && errJson.message) {
+          throw new Error(errJson.message);
+        }
       }
-    } catch (e) {}
+    } catch (e) {
+      if (e.message && e.message.includes("Insufficient balance")) {
+        throw e;
+      }
+    }
 
+    // Resilient local fallback execution:
+    const balances = this._getLocalBalances();
+    const currentSenderBal = balances[cleanSender] !== undefined ? Number(balances[cleanSender]) : senderBal;
+    if (numAmount > currentSenderBal) {
+      throw new Error(`Insufficient balance! Your current balance is ${currentSenderBal.toFixed(4)} ${tokenSymbol}.`);
+    }
+
+    const newSenderBal = Math.max(0, currentSenderBal - numAmount);
+    const currentToBal = balances[cleanTo] !== undefined ? Number(balances[cleanTo]) : 124.50;
+    const newToBal = currentToBal + numAmount;
+
+    balances[cleanSender] = newSenderBal;
+    balances[cleanTo] = newToBal;
+    this._saveLocalBalances(balances);
+    this._syncUserBalance(cleanSender, newSenderBal);
+
+    // Record in local transactions history
     const txs = JSON.parse(localStorage.getItem("bc_transactions") || "[]");
     const txHash = "0x" + Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join("");
     const newTx = {
       id: txs.length + 1,
-      fromAddress: "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7",
+      fromAddress: sender,
       toAddress,
-      amount: Number(amount),
+      amount: numAmount,
       tokenSymbol,
       txHash,
       createdAt: new Date().toISOString().slice(0, 10)
@@ -286,11 +445,13 @@ class ClientAPI {
     localStorage.setItem("bc_transactions", JSON.stringify(txs));
 
     return {
-      message: "Transfer successful",
+      message: "Transfer successful ✅",
       txHash,
-      from: newTx.fromAddress,
+      from: sender,
       to: toAddress,
-      amount
+      amount: numAmount,
+      tokenSymbol,
+      newBalance: newSenderBal.toFixed(4)
     };
   }
 

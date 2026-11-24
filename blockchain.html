@@ -179,24 +179,25 @@
     }
 
     async function transferETH() {
+      const from = document.getElementById("walletAddress").value.trim();
       const to = document.getElementById("toAddress").value.trim();
       const amount = parseFloat(document.getElementById("amount").value);
       const tokenSymbol = document.getElementById("tokenSymbol").value;
       const btn = document.getElementById("transferBtn");
       const result = document.getElementById("txResult");
 
-      if (!to || !amount) return alert("Enter all fields correctly");
+      if (!to || !amount) return alert("Please enter both recipient address and amount");
 
       btn.disabled = true;
       btn.textContent = "⏳ Broadcasting & Mining TX...";
       result.textContent = "";
 
       try {
-        const data = await window.clientAPI.transfer(to, amount, tokenSymbol);
-        result.textContent = `✅ Confirmed! Hash: ${data.txHash.slice(0, 16)}...`;
+        const data = await window.clientAPI.transfer(to, amount, tokenSymbol, from);
+        result.textContent = `✅ Confirmed! Hash: ${data.txHash.slice(0, 16)}... | Transferred ${amount} ${tokenSymbol}`;
         document.getElementById("amount").value = "";
         fetchHistory();
-        getBalance();
+        await getBalance();
       } catch (err) {
         result.textContent = "❌ " + err.message;
       } finally {
