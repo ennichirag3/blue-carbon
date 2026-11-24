@@ -346,10 +346,15 @@ class ClientAPI {
     // Bind logout button
     const logoutBtn = document.getElementById("logoutBtn");
     if (logoutBtn) {
-      logoutBtn.addEventListener("click", () => {
+      logoutBtn.addEventListener("click", (e) => {
+        e.preventDefault();
         localStorage.removeItem("token");
         localStorage.removeItem("user");
-        window.location.href = "index.html";
+        if (typeof window.navigateWith3D === "function") {
+          window.navigateWith3D("index.html");
+        } else {
+          window.location.href = "index.html";
+        }
       });
     }
   }

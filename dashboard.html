@@ -119,13 +119,6 @@
       } catch (e) {}
     }
 
-    // Logout
-    document.getElementById("logoutBtn").addEventListener("click", () => {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      window.location.href = "index.html";
-    });
-
     // Fetch live projects & stats
     async function loadDashboard() {
       try {

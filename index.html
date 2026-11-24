@@ -70,12 +70,14 @@
 
         // 3D Motion Warp Transition into platform
         const card = document.getElementById("loginCard");
+        const container = document.querySelector(".page-container");
         card.classList.add("login-warp-3d");
+        if (container) container.classList.add("portal-warp-active");
         if (window.play3DWarpSound) window.play3DWarpSound();
 
         setTimeout(() => {
           window.location.href = "dashboard.html";
-        }, 420);
+        }, 440);
 
       } catch (err) {
         loginError.textContent = err.message || "Invalid credentials.";

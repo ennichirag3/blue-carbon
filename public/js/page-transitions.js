@@ -72,17 +72,21 @@
 
       // Intercept internal page navigation
       e.preventDefault();
-      playTransitionSound("click");
-
-      if (container) {
-        container.classList.add("page-3d-exit");
-      }
-
-      // Smooth 3D delay matching exit keyframe
-      setTimeout(() => {
-        window.location.href = href;
-      }, 280);
+      navigateWith3D(href);
     });
+  }
+
+  // --- PROGRAMMATIC 3D NAVIGATION HELPER ---
+  function navigateWith3D(href) {
+    if (!href) return;
+    playTransitionSound("click");
+    const container = document.querySelector(".page-container");
+    if (container) {
+      container.classList.add("page-3d-exit");
+    }
+    setTimeout(() => {
+      window.location.href = href;
+    }, 260);
   }
 
   // --- 3D CARD TILT MICRO-INTERACTIONS ---
@@ -93,8 +97,8 @@
         const rect = card.getBoundingClientRect();
         const x = e.clientX - rect.left - rect.width / 2;
         const y = e.clientY - rect.top - rect.height / 2;
-        const rotateX = (-y / (rect.height / 2)) * 4;
-        const rotateY = (x / (rect.width / 2)) * 4;
+        const rotateX = (-y / (rect.height / 2)) * 3.5;
+        const rotateY = (x / (rect.width / 2)) * 3.5;
         card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.008, 1.008, 1.008)`;
       });
 
@@ -105,6 +109,15 @@
   }
 
   window.play3DWarpSound = () => playTransitionSound("warp");
+  window.navigateWith3D = navigateWith3D;
+
+  // Restore bfcache seamlessly
+  window.addEventListener("pageshow", () => {
+    const container = document.querySelector(".page-container");
+    if (container) {
+      container.classList.remove("page-3d-exit", "portal-warp-active");
+    }
+  });
 
   document.addEventListener("DOMContentLoaded", () => {
     initPageTransitions();
