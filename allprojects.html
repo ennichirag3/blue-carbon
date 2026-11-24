@@ -14,26 +14,51 @@
     <!-- NAVBAR -->
     <nav class="app-navbar">
       <a href="dashboard.html" class="nav-brand">
-        <span style="color:var(--neon-lime);">🌿</span> Blue Carbon
+        <svg class="icon-svg" style="stroke:var(--neon-lime); width:20px; height:20px;" viewBox="0 0 24 24">
+          <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+          <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+        </svg>
+        <span>Blue Carbon</span>
       </a>
 
       <div class="nav-links-row">
-        <a href="dashboard.html" class="nav-tab-link">📊 Dashboard</a>
-        <a href="addproject.html" class="nav-tab-link">➕ Add Project</a>
-        <a href="allprojects.html" class="nav-tab-link active">📂 All Projects</a>
-        <a href="blockchain.html" class="nav-tab-link">🔗 Blockchain</a>
-        <a href="overview.html" class="nav-tab-link">🌿 Overview</a>
-        <a href="users.html" class="nav-tab-link">👥 Users</a>
+        <a href="dashboard.html" class="nav-tab-link">
+          <svg class="icon-svg" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          <span>Dashboard</span>
+        </a>
+        <a href="addproject.html" class="nav-tab-link">
+          <svg class="icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+          <span>Add Project</span>
+        </a>
+        <a href="allprojects.html" class="nav-tab-link active">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83Z"/><path d="m22 17.65-9.17 4.16a2 2 0 0 1-1.66 0L2 17.65"/><path d="m22 12.65-9.17 4.16a2 2 0 0 1-1.66 0L2 12.65"/></svg>
+          <span>All Projects</span>
+        </a>
+        <a href="blockchain.html" class="nav-tab-link">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M9 17H7A5 5 0 0 1 7 7h2"/><path d="M15 7h2a5 5 0 1 1 0 10h-2"/><line x1="8" x2="16" y1="12" y2="12"/></svg>
+          <span>Blockchain</span>
+        </a>
+        <a href="overview.html" class="nav-tab-link">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          <span>Overview</span>
+        </a>
+        <a href="users.html" class="nav-tab-link">
+          <svg class="icon-svg" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          <span>Users</span>
+        </a>
       </div>
 
-      <a href="addproject.html" class="btn-primary" style="width:auto; margin:0; padding:8px 18px;">+ Add Project</a>
+      <a href="addproject.html" class="btn-primary" style="width:auto; margin:0; padding:8px 18px;">
+        <svg class="icon-svg" style="stroke:#080d14;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+        <span>Add Project</span>
+      </a>
     </nav>
 
     <!-- CONTENT CARD -->
     <div class="glass-card">
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
         <div>
-          <h1 style="font-size:26px; font-weight:800; color:#fff;">📂 All Registered Projects</h1>
+          <h1 style="font-size:26px; font-weight:800; color:#fff;">All Registered Projects</h1>
           <p style="color:var(--text-muted); font-size:14px;">Browse all verified coastal and ocean blue carbon ecosystems</p>
         </div>
         <span id="projectsTotalBadge" class="badge-pill">0 Projects</span>
@@ -100,8 +125,13 @@
             <td style="font-family:'JetBrains Mono'; font-weight:700;">${Number(p.carbonSaved).toLocaleString()} kg CO₂</td>
             <td><span class="badge-pill">● ${p.status || 'Active'}</span></td>
             <td>
-              <button class="btn-secondary" style="padding:6px 14px; font-size:12px; margin-right:6px;" onclick="openQR(${p.id}, '${p.name.replace(/'/g, "\\'")}')">📱 QR Code</button>
-              <button class="btn-secondary" style="padding:6px 12px; font-size:12px; background:rgba(239,68,68,0.15); color:#fca5a5; border-color:rgba(239,68,68,0.3);" onclick="deleteProject(${p.id})">🗑️</button>
+              <button class="btn-secondary" style="padding:6px 14px; font-size:12px; margin-right:6px;" onclick="openQR(${p.id}, '${p.name.replace(/'/g, "\\'")}')">
+                <svg class="icon-svg" style="width:14px; height:14px;" viewBox="0 0 24 24"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/></svg>
+                <span>QR Code</span>
+              </button>
+              <button class="btn-secondary" style="padding:6px 12px; font-size:12px; background:rgba(239,68,68,0.15); color:#fca5a5; border-color:rgba(239,68,68,0.3);" onclick="deleteProject(${p.id})">
+                <svg class="icon-svg" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+              </button>
             </td>
           </tr>
         `).join("");

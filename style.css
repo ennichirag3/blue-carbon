@@ -108,17 +108,57 @@ body {
 }
 
 .brand-leaf-icon {
-  width: 52px;
-  height: 52px;
+  width: 54px;
+  height: 54px;
   border-radius: 16px;
   background: rgba(189, 247, 43, 0.12);
   border: 1px solid rgba(189, 247, 43, 0.35);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 26px;
-  margin-bottom: 12px;
+  color: var(--neon-lime);
+  margin-bottom: 14px;
   box-shadow: 0 0 24px var(--neon-lime-glow);
+}
+
+.brand-leaf-icon svg {
+  width: 28px;
+  height: 28px;
+  stroke: var(--neon-lime);
+}
+
+.icon-svg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+  stroke: currentColor;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: middle;
+  transition: var(--transition);
+}
+
+.icon-badge {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: var(--transition);
+}
+
+.nav-tab-link:hover .icon-svg,
+.nav-tab-link.active .icon-svg {
+  stroke: var(--neon-lime);
+  filter: drop-shadow(0 0 6px var(--neon-lime-glow));
 }
 
 .auth-title {
