@@ -80,6 +80,7 @@
     </div>
   </div>
 
+  <script src="client-api.js"></script>
   <script>
     const token = localStorage.getItem("token");
     if (!token) {
@@ -88,8 +89,7 @@
 
     async function loadUsers() {
       try {
-        const res = await fetch("/api/users");
-        const users = await res.json();
+        const users = await window.clientAPI.getUsers();
 
         document.getElementById("userCountBadge").textContent = `${users.length} Users`;
 

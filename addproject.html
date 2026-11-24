@@ -90,6 +90,7 @@
     </div>
   </div>
 
+  <script src="client-api.js"></script>
   <script>
     const token = localStorage.getItem("token");
     if (!token) {
@@ -110,32 +111,19 @@
       const description = document.getElementById("description").value.trim();
 
       submitBtn.disabled = true;
-      submitBtn.textContent = "Registering on SQLite...";
+      submitBtn.textContent = "Registering Project...";
 
       try {
-        const res = await fetch("/api/projects", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, location, carbonSaved, description })
-        });
+        await window.clientAPI.addProject({ name, location, carbonSaved, description });
 
-        const data = await res.json();
-
-        if (res.ok) {
-          status.style.color = "var(--neon-lime)";
-          status.textContent = "✅ Project registered successfully! Redirecting...";
-          setTimeout(() => {
-            window.location.href = "allprojects.html";
-          }, 600);
-        } else {
-          status.style.color = "#f87171";
-          status.textContent = data.message || "Failed to save project.";
-          submitBtn.disabled = false;
-          submitBtn.textContent = "Save & Register Project";
-        }
+        status.style.color = "var(--neon-lime)";
+        status.textContent = "✅ Project registered successfully! Redirecting...";
+        setTimeout(() => {
+          window.location.href = "allprojects.html";
+        }, 500);
       } catch (err) {
         status.style.color = "#f87171";
-        status.textContent = "Server error. Try again.";
+        status.textContent = err.message || "Failed to save project.";
         submitBtn.disabled = false;
         submitBtn.textContent = "Save & Register Project";
       }

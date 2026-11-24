@@ -102,6 +102,7 @@
     </div>
   </div>
 
+  <script src="client-api.js"></script>
   <script>
     // Authentication check: redirect to login if no token
     const token = localStorage.getItem("token");
@@ -124,11 +125,10 @@
       window.location.href = "index.html";
     });
 
-    // Fetch live SQLite projects & stats
+    // Fetch live projects & stats
     async function loadDashboard() {
       try {
-        const res = await fetch("/api/projects");
-        const projects = await res.json();
+        const projects = await window.clientAPI.getProjects();
 
         const count = projects.length;
         const totalCarbon = projects.reduce((sum, p) => sum + (Number(p.carbonSaved) || 0), 0);
@@ -140,11 +140,8 @@
         try {
           const userObj = storedUser ? JSON.parse(storedUser) : null;
           const wallet = userObj ? userObj.walletAddress : "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7";
-          const balRes = await fetch(`/api/blockchain/balance/${wallet}`);
-          if (balRes.ok) {
-            const balData = await balRes.json();
-            document.getElementById("walletBalance").textContent = `${balData.balance} ETH`;
-          }
+          const balData = await window.clientAPI.getBalance(wallet);
+          document.getElementById("walletBalance").textContent = `${balData.balance} ETH`;
         } catch (e) {
           document.getElementById("walletBalance").textContent = "124.50 ETH";
         }

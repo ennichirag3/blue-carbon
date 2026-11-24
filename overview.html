@@ -86,6 +86,7 @@
     </div>
   </div>
 
+  <script src="client-api.js"></script>
   <script>
     const token = localStorage.getItem("token");
     if (!token) {
@@ -94,8 +95,7 @@
 
     async function loadOverview() {
       try {
-        const res = await fetch("/api/projects");
-        const projects = await res.json();
+        const projects = await window.clientAPI.getProjects();
 
         const totalCarbon = projects.reduce((sum, p) => sum + (Number(p.carbonSaved) || 0), 0);
         document.getElementById("overviewProjCount").textContent = projects.length;

@@ -48,13 +48,8 @@
     </div>
   </div>
 
+  <script src="client-api.js"></script>
   <script>
-    // If user already logged in with valid token, allow seamless redirect
-    const token = localStorage.getItem("token");
-    if (token) {
-      // Optional quick check
-    }
-
     const loginForm = document.getElementById("loginForm");
     const loginError = document.getElementById("loginError");
     const loginBtn = document.getElementById("loginBtn");
@@ -66,20 +61,7 @@
       loginBtn.textContent = "Verifying...";
 
       try {
-        const res = await fetch("/api/users/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          loginError.textContent = data.message || "Invalid email or password.";
-          loginBtn.disabled = false;
-          loginBtn.textContent = "Sign In";
-          return;
-        }
+        const data = await window.clientAPI.login(email, password);
 
         // Save session credentials
         localStorage.setItem("token", data.token);
@@ -95,7 +77,7 @@
         }, 300);
 
       } catch (err) {
-        loginError.textContent = "Server connection error. Please try again.";
+        loginError.textContent = err.message || "Invalid credentials.";
         loginBtn.disabled = false;
         loginBtn.textContent = "Sign In";
       }

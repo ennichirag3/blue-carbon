@@ -139,6 +139,7 @@
     </div>
   </div>
 
+  <script src="client-api.js"></script>
   <script>
     const token = localStorage.getItem("token");
     if (!token) {
@@ -163,9 +164,7 @@
       display.innerText = "⏳ Querying balance...";
 
       try {
-        const res = await fetch(`/api/blockchain/balance/${wallet}`);
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to fetch balance");
+        const data = await window.clientAPI.getBalance(wallet);
         display.innerText = `Balance: ${data.balance} ETH / BCX`;
       } catch (err) {
         display.innerText = "❌ " + err.message;
@@ -186,14 +185,7 @@
       result.textContent = "";
 
       try {
-        const res = await fetch("/api/blockchain/transfer", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ toAddress: to, amount, tokenSymbol })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Transfer failed");
-
+        const data = await window.clientAPI.transfer(to, amount, tokenSymbol);
         result.textContent = `✅ Confirmed! Hash: ${data.txHash.slice(0, 16)}...`;
         document.getElementById("amount").value = "";
         fetchHistory();
@@ -209,8 +201,7 @@
     async function fetchHistory() {
       const tbody = document.getElementById("historyBody");
       try {
-        const res = await fetch("/api/blockchain/history");
-        const txs = await res.json();
+        const txs = await window.clientAPI.getHistory();
         if (txs.length === 0) {
           tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-dim); padding:20px;">No transactions recorded</td></tr>`;
           return;

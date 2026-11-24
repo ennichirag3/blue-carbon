@@ -57,6 +57,7 @@
     </div>
   </div>
 
+  <script src="client-api.js"></script>
   <script>
     const registerForm = document.getElementById("registerForm");
     const regError = document.getElementById("regError");
@@ -75,20 +76,7 @@
       regBtn.textContent = "Creating Account...";
 
       try {
-        const res = await fetch("/api/users/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name, email, password, walletAddress })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          regError.textContent = data.message || "Registration failed. Try again.";
-          regBtn.disabled = false;
-          regBtn.textContent = "Register Account";
-          return;
-        }
+        const data = await window.clientAPI.register(name, email, password, walletAddress);
 
         // Save session credentials
         localStorage.setItem("token", data.token);
@@ -104,7 +92,7 @@
         }, 300);
 
       } catch (err) {
-        regError.textContent = "Server connection error. Please try again.";
+        regError.textContent = err.message || "Registration failed. Try again.";
         regBtn.disabled = false;
         regBtn.textContent = "Register Account";
       }

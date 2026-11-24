@@ -98,6 +98,7 @@
     </div>
   </div>
 
+  <script src="client-api.js"></script>
   <script>
     const token = localStorage.getItem("token");
     if (!token) {
@@ -106,8 +107,7 @@
 
     async function loadProjects() {
       try {
-        const res = await fetch("/api/projects");
-        const projects = await res.json();
+        const projects = await window.clientAPI.getProjects();
 
         document.getElementById("projectsTotalBadge").textContent = `${projects.length} Projects`;
 
@@ -143,8 +143,7 @@
 
     async function openQR(id, name) {
       try {
-        const res = await fetch(`/api/projects/qrcode/${id}`);
-        const data = await res.json();
+        const data = await window.clientAPI.getQRCode(id);
         document.getElementById("modalProjectName").textContent = name;
         document.getElementById("modalQrImg").src = data.qrCode;
         document.getElementById("qrModal").style.display = "flex";
@@ -156,10 +155,8 @@
     async function deleteProject(id) {
       if (!confirm("Are you sure you want to delete this project?")) return;
       try {
-        const res = await fetch(`/api/projects/${id}`, { method: "DELETE" });
-        if (res.ok) {
-          loadProjects();
-        }
+        await window.clientAPI.deleteProject(id);
+        loadProjects();
       } catch (e) {
         alert("Error deleting project");
       }
