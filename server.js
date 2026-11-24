@@ -1,92 +1,95 @@
 import express from "express";
-import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
-import fetch from "node-fetch";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
+import db from "./database.js";
 import userRoutes from "./routes/userRoutes.js";
 import projectRoutes from "./routes/projectRoutes.js";
 import blockchainRoutes from "./routes/blockchain.js";
 
 dotenv.config();
 
-const startServer = async () => {
-  const app = express();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-  // --- Middleware ---
-  app.use(cors());
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+const app = express();
 
-  // --- MongoDB Connection ---
-  const mongoURI = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/BlueBlock";
-  try {
-    await mongoose.connect(mongoURI);
-    console.log("✅ MongoDB connected 🚀");
-  } catch (err) {
-    console.error("❌ MongoDB connection error:", err.message);
-    process.exit(1);
+// --- Middleware ---
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Serve static frontend assets
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(__dirname));
+
+// --- API Routes ---
+app.use("/api/users", userRoutes);
+app.use("/api/projects", projectRoutes);
+app.use("/api/blockchain", blockchainRoutes);
+
+// --- Health / Info Endpoint ---
+app.get("/api/health", (req, res) => {
+  res.json({
+    status: "healthy",
+    database: "SQLite (Built-in WAL Mode)",
+    version: "2.0.0-spatial-3d",
+    timestamp: new Date().toISOString()
+  });
+});
+
+// --- API Root Endpoint ---
+app.get("/api", (req, res) => {
+  res.json({
+    name: "Blue Carbon Spatial Platform API",
+    version: "2.0.0",
+    database: "SQLite",
+    endpoints: [
+      "/api/users",
+      "/api/projects",
+      "/api/blockchain",
+      "/api/health"
+    ]
+  });
+});
+
+// Fallback to index.html for SPA routing
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api/")) {
+    return next();
   }
+  res.sendFile(path.join(__dirname, "index.html"));
+});
 
-  // --- Wait for Hardhat Node ---
-  const waitForHardhatNode = async (url = "http://127.0.0.1:8545") => {
-    const RETRIES = 20;
-    const DELAY = 1000; // 1 second
-    for (let i = 0; i < RETRIES; i++) {
-      try {
-        const res = await fetch(url);
-        if (res.ok || res.status === 200 || res.status === 405) {
-          console.log("✅ Hardhat node detected, continuing server startup");
-          return true;
-        }
-      } catch (err) {
-        console.log(`⏳ Waiting for Hardhat node... (${i + 1}/${RETRIES})`);
-      }
-      await new Promise((r) => setTimeout(r, DELAY));
-    }
-    console.warn("⚠️ Hardhat node not detected. Blockchain APIs may fail.");
-    return false;
-  };
+// --- Global Error Handler ---
+app.use((err, req, res, next) => {
+  console.error("💥 Server Error:", err.stack);
+  res.status(500).json({ message: "Internal Server Error", error: err.message });
+});
 
-  await waitForHardhatNode();
+// --- Start Server ---
+const PORT = process.env.PORT || 5001;
+const server = app.listen(PORT, "0.0.0.0", () => {
+  console.log(`⚡ Blue Carbon Spatial Server running on port ${PORT}`);
+  console.log(`🌐 Local URL: http://localhost:${PORT}`);
+  console.log(`💾 Database: SQLite (Zero External Config Required)`);
+});
 
-  // --- Routes ---
-  app.use("/api/users", userRoutes);
-  app.use("/api/projects", projectRoutes);
-  app.use("/api/blockchain", blockchainRoutes);
-
-  // --- Root Endpoint ---
-  app.get("/", (req, res) => {
-    res.json({ status: "success", message: "Blue Carbon Backend is running ✅" });
+// --- Graceful Shutdown ---
+const gracefulShutdown = () => {
+  console.log("\n🛑 Shutting down gracefully...");
+  try {
+    db.close();
+  } catch (e) {}
+  server.close(() => {
+    console.log("✅ Server closed. Database disconnected.");
+    process.exit(0);
   });
-
-  // --- Global Error Handler ---
-  app.use((err, req, res, next) => {
-    console.error("💥 Server Error:", err.stack);
-    res.status(500).json({ message: "Internal Server Error", error: err.message });
-  });
-
-  // --- Start Server ---
-  const PORT = process.env.PORT || 5001;
-  const server = app.listen(PORT, () => {
-    console.log(`⚡ Server running on port ${PORT}`);
-  });
-
-  // --- Graceful Shutdown ---
-  const gracefulShutdown = async () => {
-    console.log("\n🛑 Shutting down gracefully...");
-    await mongoose.disconnect();
-    server.close(() => {
-      console.log("✅ Server closed. MongoDB disconnected.");
-      process.exit(0);
-    });
-  };
-
-  process.on("SIGINT", gracefulShutdown);
-  process.on("SIGTERM", gracefulShutdown);
 };
 
-startServer().catch((err) => {
-  console.error("💥 Fatal error during startup:", err);
-  process.exit(1);
-});
+process.on("SIGINT", gracefulShutdown);
+process.on("SIGTERM", gracefulShutdown);
+
+export default app;

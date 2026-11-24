@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Blue Carbon · 15s Spatial Motion Design Showreel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;700;800;900&family=JetBrains+Mono:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    #stage {
+      position: relative;
+      width: 1920px;
+      height: 1080px;
+      background: #0a0e14;
+      overflow: hidden;
+      transform-origin: center center;
+    }
+    canvas {
+      position: absolute;
+      inset: 0;
+      width: 1920px;
+      height: 1080px;
+    }
+    .hud-overlay {
+      position: absolute;
+      top: 60px;
+      left: 80px;
+      right: 80px;
+      display: flex;
+      justify-content: space-between;
+      color: rgba(255, 255, 255, 0.4);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      letter-spacing: 2px;
+      z-index: 10;
+      pointer-events: none;
+    }
+    .hud-time {
+      color: #bdf72b;
+    }
+  </style>
+</head>
+<body>
+  <div id="stage">
+    <div class="hud-overlay">
+      <div>CRYPTONEST // BLUE CARBON REEL</div>
+      <div class="hud-time" id="hudTimer">00:00:00 / 00:15:00</div>
+      <div>120 BPM · 60 FPS</div>
+    </div>
+    <canvas id="renderCanvas" width="1920" height="1080"></canvas>
+  </div>
+
+  <script>
+    // 120 BPM: 0.5s per beat, 4 beats per bar, 30 beats = 15.0 seconds
+    const DURATION = 15.0;
+    const BPM = 120;
+    const BEAT_DURATION = 60 / BPM; // 0.5s
+    const TOTAL_BEATS = 30;
+
+    const canvas = document.getElementById("renderCanvas");
+    const ctx = canvas.getContext("2d");
+    const hudTimer = document.getElementById("hudTimer");
+
+    // Palette: Obsidian Black, Pure White, Lime Chartreuse, Cobalt Slate
+    const COLOR_BG = "#0a0e14";
+    const COLOR_WHITE = "#ffffff";
+    const COLOR_LIME = "#bdf72b";
+    const COLOR_COBALT = "#2563eb";
+
+    // Mathematical Easing Functions (Time-based, no timers, strictly deterministic)
+    const easeExpOut = (x) => (x === 1 ? 1 : 1 - Math.pow(2, -10 * x));
+    const easeExpInOut = (x) => {
+      if (x === 0) return 0;
+      if (x === 1) return 1;
+      return x < 0.5
+        ? Math.pow(2, 20 * x - 10) / 2
+        : (2 - Math.pow(2, -20 * x + 10)) / 2;
+    };
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+    // Core deterministic render function: window.seek(t)
+    window.seek = function(t) {
+      t = clamp(t, 0, DURATION);
+      const beat = t / BEAT_DURATION; // 0 to 30
+
+      // Update HUD
+      const secs = Math.floor(t);
+      const frames = Math.floor((t % 1) * 60);
+      hudTimer.textContent = `00:${String(secs).padStart(2, '0')}:${String(frames).padStart(2, '0')} // BEAT ${beat.toFixed(1)}`;
+
+      // Clear frame
+      ctx.fillStyle = COLOR_BG;
+      ctx.fillRect(0, 0, 1920, 1080);
+
+      const cx = 960;
+      const cy = 540;
+
+      // =========================================================================
+      // BAR 1 (Beats 0 - 4 | t: 0.0s - 2.0s): Kinetic Type & Seed Circle
+      // =========================================================================
+      if (beat < 4) {
+        const p = beat / 4; // 0 to 1
+        const rInitial = 24;
+
+        if (beat < 1.0) {
+          // Beat 0-1: Precision circle emerges
+          const sub = easeExpOut(beat / 1.0);
+          ctx.strokeStyle = COLOR_LIME;
+          ctx.lineWidth = 4;
+          ctx.beginPath();
+          ctx.arc(cx, cy, rInitial * sub, 0, Math.PI * 2);
+          ctx.stroke();
+        } else if (beat < 2.5) {
+          // Beat 1-2.5: Circle expands and splits into kinetic typography lines
+          const sub = easeExpOut((beat - 1.0) / 1.5);
+          const width = 120 + sub * 700;
+          ctx.strokeStyle = COLOR_WHITE;
+          ctx.lineWidth = 4;
+          ctx.strokeRect(cx - width / 2, cy - 60, width, 120);
+
+          ctx.fillStyle = COLOR_WHITE;
+          ctx.font = "800 64px 'Plus Jakarta Sans'";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          const tracking = (1 - sub) * 40;
+          ctx.letterSpacing = `${tracking}px`;
+          ctx.fillText("BLUE CARBON", cx, cy);
+        } else {
+          // Beat 2.5-4.0: Text folds into vertical structural columns
+          const sub = easeExpInOut((beat - 2.5) / 1.5);
+          const cols = 6;
+          for (let i = 0; i < cols; i++) {
+            const colX = cx - 400 + i * 160;
+            const h = 400 * (1 - sub * 0.4);
+            ctx.fillStyle = i % 2 === 0 ? COLOR_LIME : COLOR_COBALT;
+            ctx.fillRect(colX + sub * 40, cy - h / 2, 8, h);
+          }
+        }
+      }
+
+      // =========================================================================
+      // BAR 2 (Beats 4 - 8 | t: 2.0s - 4.0s): Shape Morphing (Lines -> Hexagon)
+      // =========================================================================
+      else if (beat < 8) {
+        const p = (beat - 4) / 4;
+        const sub = easeExpInOut(p);
+
+        // Columns rotate and morph into a pure vector 2D hexagon
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(sub * Math.PI);
+
+        const hexRadius = 180 + Math.sin(p * Math.PI) * 40;
+        ctx.beginPath();
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * Math.PI) / 3;
+          const hx = Math.cos(angle) * hexRadius;
+          const hy = Math.sin(angle) * hexRadius;
+          if (i === 0) ctx.moveTo(hx, hy);
+          else ctx.lineTo(hx, hy);
+        }
+        ctx.closePath();
+
+        ctx.strokeStyle = COLOR_LIME;
+        ctx.lineWidth = 6;
+        ctx.stroke();
+
+        // Inner folding vector geometry
+        ctx.beginPath();
+        for (let i = 0; i < 3; i++) {
+          const angle = (i * 2 * Math.PI) / 3 + sub * Math.PI;
+          ctx.moveTo(0, 0);
+          ctx.lineTo(Math.cos(angle) * hexRadius, Math.sin(angle) * hexRadius);
+        }
+        ctx.strokeStyle = COLOR_WHITE;
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.restore();
+      }
+
+      // =========================================================================
+      // BAR 3 (Beats 8 - 12 | t: 4.0s - 6.0s): 2D-to-3D Moment (Isometric Spatial Cube)
+      // =========================================================================
+      else if (beat < 12) {
+        const p = (beat - 8) / 4;
+        const sub = easeExpInOut(p);
+
+        // Isometric 3D Projection math
+        const rotY = sub * Math.PI * 1.5;
+        const rotX = Math.PI / 6 + sub * 0.2;
+        const size = 180;
+
+        const vertices = [
+          [-size, -size, -size], [size, -size, -size], [size, size, -size], [-size, size, -size],
+          [-size, -size, size],  [size, -size, size],  [size, size, size],  [-size, size, size]
+        ];
+
+        // Project vertices
+        const projected = vertices.map(([x, y, z]) => {
+          // Rotate Y
+          const x1 = x * Math.cos(rotY) + z * Math.sin(rotY);
+          const z1 = -x * Math.sin(rotY) + z * Math.cos(rotY);
+          // Rotate X
+          const y2 = y * Math.cos(rotX) - z1 * Math.sin(rotX);
+          const z2 = y * Math.sin(rotX) + z1 * Math.cos(rotX);
+          return [cx + x1, cy + y2];
+        });
+
+        const edges = [
+          [0,1], [1,2], [2,3], [3,0],
+          [4,5], [5,6], [6,7], [7,4],
+          [0,4], [1,5], [2,6], [3,7]
+        ];
+
+        ctx.strokeStyle = COLOR_WHITE;
+        ctx.lineWidth = 4;
+        edges.forEach(([a, b]) => {
+          ctx.beginPath();
+          ctx.moveTo(projected[a][0], projected[a][1]);
+          ctx.lineTo(projected[b][0], projected[b][1]);
+          ctx.stroke();
+        });
+
+        // 3D Core Carbon Node
+        ctx.fillStyle = COLOR_LIME;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 16, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      // =========================================================================
+      // BAR 4 (Beats 12 - 16 | t: 6.0s - 8.0s): Data / Spatial UI Moment
+      // =========================================================================
+      else if (beat < 16) {
+        const p = (beat - 12) / 4;
+        const sub = easeExpOut(p);
+
+        // Cube unfolds into 3D Glass Card
+        const cardW = 900 * sub;
+        const cardH = 460 * sub;
+
+        ctx.fillStyle = "rgba(22, 28, 38, 0.95)";
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.roundRect(cx - cardW / 2, cy - cardH / 2, cardW, cardH, 26 * sub);
+        ctx.fill();
+        ctx.stroke();
+
+        if (sub > 0.4) {
+          // UI Content emerges
+          ctx.fillStyle = COLOR_WHITE;
+          ctx.font = "800 28px 'Plus Jakarta Sans'";
+          ctx.textAlign = "left";
+          ctx.fillText("BTC / USDT · 24,657.09", cx - cardW / 2 + 50, cy - cardH / 2 + 70);
+
+          ctx.fillStyle = COLOR_LIME;
+          ctx.font = "700 18px 'JetBrains Mono'";
+          ctx.fillText("+24.78% 24h HIGH", cx + cardW / 2 - 240, cy - cardH / 2 + 70);
+
+          // Animated curve
+          ctx.beginPath();
+          ctx.moveTo(cx - cardW / 2 + 50, cy + 80);
+          for (let x = 0; x < cardW - 100; x += 30) {
+            const curveY = cy + 40 - Math.sin((x / (cardW - 100)) * Math.PI * 2) * 60;
+            ctx.lineTo(cx - cardW / 2 + 50 + x, curveY);
+          }
+          ctx.strokeStyle = COLOR_LIME;
+          ctx.lineWidth = 4;
+          ctx.stroke();
+        }
+      }
+
+      // =========================================================================
+      // BAR 5 (Beats 16 - 22 | t: 8.0s - 11.0s): The Strongest Moment (Matrix of 64 Tokens)
+      // =========================================================================
+      else if (beat < 22) {
+        const p = (beat - 16) / 6;
+        const sub = easeExpInOut(p);
+
+        // 8x8 Matrix of cryptographic tokens rotating in harmonic wave
+        const count = 8;
+        const spacing = 110;
+        const startX = cx - (count - 1) * spacing * 0.5;
+        const startY = cy - (count - 1) * spacing * 0.5;
+
+        for (let r = 0; r < count; r++) {
+          for (let c = 0; c < count; c++) {
+            const px = startX + c * spacing;
+            const py = startY + r * spacing;
+            const dist = Math.hypot(c - 3.5, r - 3.5);
+            const phase = sub * Math.PI * 3 - dist * 0.6;
+            const size = 28 + Math.sin(phase) * 16;
+
+            ctx.save();
+            ctx.translate(px, py);
+            ctx.rotate(phase);
+
+            if ((r + c) % 2 === 0) {
+              ctx.strokeStyle = COLOR_LIME;
+              ctx.lineWidth = 3;
+              ctx.strokeRect(-size / 2, -size / 2, size, size);
+            } else {
+              ctx.fillStyle = COLOR_WHITE;
+              ctx.beginPath();
+              ctx.arc(0, 0, size * 0.35, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            ctx.restore();
+          }
+        }
+      }
+
+      // =========================================================================
+      // BAR 6 & 7 (Beats 22 - 28 | t: 11.0s - 14.0s): Kinetic Convergence Lockup
+      // =========================================================================
+      else if (beat < 28) {
+        const p = (beat - 22) / 6;
+        const sub = easeExpOut(p);
+
+        ctx.fillStyle = COLOR_WHITE;
+        ctx.font = "900 80px 'Plus Jakarta Sans'";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("CRYPTONEST", cx, cy - 50);
+
+        ctx.fillStyle = COLOR_LIME;
+        ctx.font = "800 36px 'JetBrains Mono'";
+        ctx.letterSpacing = "6px";
+        ctx.fillText("BLUE CARBON VERIFIED", cx, cy + 50);
+
+        // High-tensile bounding brackets
+        const bw = 950 * sub;
+        ctx.strokeStyle = COLOR_LIME;
+        ctx.lineWidth = 4;
+        ctx.strokeRect(cx - bw / 2, cy - 140, bw, 280);
+      }
+
+      // =========================================================================
+      // FINAL HALF BAR (Beats 28 - 30 | t: 14.0s - 15.0s): Condensation to Initial Circle (Perfect Loop)
+      // =========================================================================
+      else {
+        const p = (beat - 28) / 2;
+        const sub = easeExpInOut(p);
+
+        // Smoothly collapses back into the exact initial circle (r: 24px)
+        const currentR = 280 * (1 - sub) + 24 * sub;
+        ctx.strokeStyle = COLOR_LIME;
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(cx, cy, currentR, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    };
+
+    // Auto-playback loop for preview
+    let startTime = null;
+    function loop(now) {
+      if (!startTime) startTime = now;
+      const elapsed = ((now - startTime) / 1000) % DURATION;
+      window.seek(elapsed);
+      requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+
+    // Initial seek
+    window.seek(0);
+  </script>
+</body>
+</html>

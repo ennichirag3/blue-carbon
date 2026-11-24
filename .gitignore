@@ -1,7 +1,9 @@
 node_modules
-
-node_modules
 .env
+.DS_Store
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
 
 # Hardhat files
 /cache
