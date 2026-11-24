@@ -10,8 +10,8 @@
 <body>
   <div class="spatial-bg"></div>
 
-  <div class="page-container" style="flex-direction: column; max-width: 1200px; margin: 0 auto;">
-    <!-- NAVBAR -->
+  <div class="page-container">
+    <!-- NAVBAR (Identical across all pages) -->
     <nav class="app-navbar">
       <a href="dashboard.html" class="nav-brand">
         <svg class="icon-svg" style="stroke:var(--neon-lime); width:20px; height:20px;" viewBox="0 0 24 24">
@@ -48,10 +48,13 @@
         </a>
       </div>
 
-      <a href="addproject.html" class="btn-primary" style="width:auto; margin:0; padding:8px 18px;">
-        <svg class="icon-svg" style="stroke:#080d14;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
-        <span>Add Project</span>
-      </a>
+      <div class="nav-user-group">
+        <span id="userGreeting" class="user-greeting">👤 User</span>
+        <button id="logoutBtn" class="btn-logout">
+          <svg class="icon-svg" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          <span>Log Out</span>
+        </button>
+      </div>
     </nav>
 
     <!-- CONTENT CARD -->
@@ -59,9 +62,15 @@
       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:12px;">
         <div>
           <h1 style="font-size:26px; font-weight:800; color:#fff;">All Registered Projects</h1>
-          <p style="color:var(--text-muted); font-size:14px;">Browse all verified coastal and ocean blue carbon ecosystems</p>
+          <p style="color:var(--text-muted); font-size:14px; margin-top:4px;">Browse all verified coastal and ocean blue carbon ecosystems</p>
         </div>
-        <span id="projectsTotalBadge" class="badge-pill">0 Projects</span>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <span id="projectsTotalBadge" class="badge-pill">0 Projects</span>
+          <a href="addproject.html" class="btn-primary" style="width:auto; margin:0; padding:8px 18px;">
+            <svg class="icon-svg" style="stroke:#080d14;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+            <span>Add Project</span>
+          </a>
+        </div>
       </div>
 
       <div class="table-container">

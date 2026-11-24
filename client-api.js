@@ -314,6 +314,48 @@ class ClientAPI {
     } catch (e) {}
     return JSON.parse(localStorage.getItem("bc_users") || "[]");
   }
+
+  // --- AUTOMATIC NAVBAR & SESSION INITIALIZER ---
+  setupNavbar() {
+    const isAuthPage = window.location.pathname.endsWith("index.html") || 
+                       window.location.pathname.endsWith("register.html") || 
+                       window.location.pathname === "/";
+
+    const token = localStorage.getItem("token");
+    if (!token && !isAuthPage) {
+      window.location.href = "index.html";
+      return;
+    }
+
+    // Populate user greeting if element exists
+    const greetingEl = document.getElementById("userGreeting");
+    if (greetingEl) {
+      const stored = localStorage.getItem("user");
+      if (stored) {
+        try {
+          const u = JSON.parse(stored);
+          greetingEl.textContent = `👤 ${u.name || u.email}`;
+        } catch (e) {
+          greetingEl.textContent = "👤 User";
+        }
+      } else {
+        greetingEl.textContent = "👤 User";
+      }
+    }
+
+    // Bind logout button
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+      logoutBtn.addEventListener("click", () => {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "index.html";
+      });
+    }
+  }
 }
 
 window.clientAPI = new ClientAPI();
+document.addEventListener("DOMContentLoaded", () => {
+  window.clientAPI.setupNavbar();
+});

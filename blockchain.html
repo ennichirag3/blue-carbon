@@ -10,8 +10,8 @@
 <body>
   <div class="spatial-bg"></div>
 
-  <div class="page-container" style="flex-direction: column; max-width: 1200px; margin: 0 auto;">
-    <!-- NAVBAR -->
+  <div class="page-container">
+    <!-- NAVBAR (Identical across all pages) -->
     <nav class="app-navbar">
       <a href="dashboard.html" class="nav-brand">
         <svg class="icon-svg" style="stroke:var(--neon-lime); width:20px; height:20px;" viewBox="0 0 24 24">
@@ -48,7 +48,13 @@
         </a>
       </div>
 
-      <a href="dashboard.html" class="btn-secondary" style="padding:8px 16px;">← Back</a>
+      <div class="nav-user-group">
+        <span id="userGreeting" class="user-greeting">👤 User</span>
+        <button id="logoutBtn" class="btn-logout">
+          <svg class="icon-svg" style="width:14px; height:14px;" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+          <span>Log Out</span>
+        </button>
+      </div>
     </nav>
 
     <!-- 2-COLUMN LAYOUT -->
