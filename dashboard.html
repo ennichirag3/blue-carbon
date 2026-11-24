@@ -1,8 +1,160 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="refresh" content="0; url=/#dashboard">
-  <script>window.location.href = "/#dashboard";</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard – Blue Carbon Platform</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
 </head>
-<body>Redirecting to Spatial Dashboard...</body>
+<body>
+  <div class="spatial-bg"></div>
+
+  <div class="page-container" style="flex-direction: column; max-width: 1200px; margin: 0 auto;">
+    <!-- NAVBAR (Maintaining all previous options) -->
+    <nav class="app-navbar">
+      <a href="dashboard.html" class="nav-brand">
+        <span style="color:var(--neon-lime);">🌿</span> Blue Carbon
+      </a>
+
+      <div class="nav-links-row">
+        <a href="dashboard.html" class="nav-tab-link active">📊 Dashboard</a>
+        <a href="addproject.html" class="nav-tab-link">➕ Add Project</a>
+        <a href="allprojects.html" class="nav-tab-link">📂 All Projects</a>
+        <a href="blockchain.html" class="nav-tab-link">🔗 Blockchain</a>
+        <a href="overview.html" class="nav-tab-link">🌿 Overview</a>
+        <a href="users.html" class="nav-tab-link">👥 Users</a>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px;">
+        <span id="userGreeting" style="font-size:13px; color:var(--text-muted); font-weight:600;">Welcome</span>
+        <button id="logoutBtn" class="btn-logout">🚪 Log Out</button>
+      </div>
+    </nav>
+
+    <!-- MAIN DASHBOARD CARD -->
+    <div class="glass-card">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; flex-wrap:wrap; gap:12px;">
+        <div>
+          <h1 style="font-size:28px; font-weight:800; color:#fff;">📊 Platform Dashboard</h1>
+          <p style="color:var(--text-muted); font-size:14px; margin-top:4px;">
+            Decentralized Blue Carbon monitoring, sequestration metrics, and on-chain verification
+          </p>
+        </div>
+        <a href="addproject.html" class="btn-primary" style="width:auto; margin:0; padding:10px 22px;">+ Add New Project</a>
+      </div>
+
+      <!-- STATS GRID -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="projectCount">0</div>
+          <div class="stat-label">Total Projects</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="carbonTotal">0</div>
+          <div class="stat-label">Carbon Saved (kg CO₂)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="walletBalance">--</div>
+          <div class="stat-label">Wallet Balance (ETH)</div>
+        </div>
+      </div>
+
+      <!-- RECENT PROJECTS -->
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+        <h2 style="font-size:20px; font-weight:700; color:#fff;">🌱 Recent Blue Carbon Projects</h2>
+        <a href="allprojects.html" style="color:var(--neon-lime); text-decoration:none; font-size:13px; font-weight:700;">View All →</a>
+      </div>
+
+      <div class="projects-grid" id="projectsList">
+        <p style="text-align:center; color:var(--text-dim); padding:40px 0; grid-column:span 3;">
+          ⏳ Loading registered projects...
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Authentication check: redirect to login if no token
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "index.html";
+    }
+
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const u = JSON.parse(storedUser);
+        document.getElementById("userGreeting").textContent = `👤 ${u.name || u.email}`;
+      } catch (e) {}
+    }
+
+    // Logout
+    document.getElementById("logoutBtn").addEventListener("click", () => {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "index.html";
+    });
+
+    // Fetch live SQLite projects & stats
+    async function loadDashboard() {
+      try {
+        const res = await fetch("/api/projects");
+        const projects = await res.json();
+
+        const count = projects.length;
+        const totalCarbon = projects.reduce((sum, p) => sum + (Number(p.carbonSaved) || 0), 0);
+
+        document.getElementById("projectCount").textContent = count;
+        document.getElementById("carbonTotal").textContent = totalCarbon.toLocaleString();
+
+        // Fetch wallet balance
+        try {
+          const userObj = storedUser ? JSON.parse(storedUser) : null;
+          const wallet = userObj ? userObj.walletAddress : "0x89205A3A3b2A69De6Dbf7f01ED13B2108B2c43e7";
+          const balRes = await fetch(`/api/blockchain/balance/${wallet}`);
+          if (balRes.ok) {
+            const balData = await balRes.json();
+            document.getElementById("walletBalance").textContent = `${balData.balance} ETH`;
+          }
+        } catch (e) {
+          document.getElementById("walletBalance").textContent = "124.50 ETH";
+        }
+
+        // Render projects
+        const list = document.getElementById("projectsList");
+        if (projects.length === 0) {
+          list.innerHTML = `<p style="text-align:center; color:var(--text-dim); padding:30px; grid-column:span 3;">No projects added yet.</p>`;
+          return;
+        }
+
+        list.innerHTML = projects.slice(0, 6).map(p => `
+          <div class="project-item">
+            <div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span class="badge-pill">● ${p.status || 'Active'}</span>
+                <span style="font-size:12px; color:var(--text-dim); font-family:'JetBrains Mono';">${p.category || 'Marine'}</span>
+              </div>
+              <h3>${p.name}</h3>
+              <p style="color:var(--neon-lime); font-size:12px; margin:4px 0 8px;">📍 ${p.location}</p>
+              <p>${p.description}</p>
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top:12px; display:flex; justify-content:space-between; align-items:center;">
+              <div>
+                <span style="font-size:11px; color:var(--text-dim); display:block;">Carbon Saved</span>
+                <strong style="color:var(--neon-lime); font-family:'JetBrains Mono';">${Number(p.carbonSaved).toLocaleString()} kg CO₂</strong>
+              </div>
+              <a href="allprojects.html" class="btn-secondary" style="padding:6px 14px; font-size:12px;">Inspect</a>
+            </div>
+          </div>
+        `).join("");
+
+      } catch (err) {
+        console.error("Dashboard error:", err);
+      }
+    }
+
+    loadDashboard();
+  </script>
+</body>
 </html>

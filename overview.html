@@ -1,8 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="refresh" content="0; url=/#dashboard">
-  <script>window.location.href = "/#dashboard";</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Overview – Blue Carbon Platform</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
 </head>
-<body>Redirecting to Spatial Overview...</body>
+<body>
+  <div class="spatial-bg"></div>
+
+  <div class="page-container" style="flex-direction: column; max-width: 1100px; margin: 0 auto;">
+    <!-- NAVBAR -->
+    <nav class="app-navbar">
+      <a href="dashboard.html" class="nav-brand">
+        <span style="color:var(--neon-lime);">🌿</span> Blue Carbon
+      </a>
+
+      <div class="nav-links-row">
+        <a href="dashboard.html" class="nav-tab-link">📊 Dashboard</a>
+        <a href="addproject.html" class="nav-tab-link">➕ Add Project</a>
+        <a href="allprojects.html" class="nav-tab-link">📂 All Projects</a>
+        <a href="blockchain.html" class="nav-tab-link">🔗 Blockchain</a>
+        <a href="overview.html" class="nav-tab-link active">🌿 Overview</a>
+        <a href="users.html" class="nav-tab-link">👥 Users</a>
+      </div>
+
+      <a href="dashboard.html" class="btn-secondary" style="padding:8px 16px;">← Back</a>
+    </nav>
+
+    <!-- OVERVIEW CARD -->
+    <div class="glass-card">
+      <div style="text-align:center; margin-bottom:28px;">
+        <h1 style="font-size:28px; font-weight:800; color:#fff;">🌿 Ecosystem Overview</h1>
+        <p style="color:var(--text-muted); font-size:14px; margin-top:4px;">
+          Comprehensive environmental analytics across verified marine carbon reservoirs
+        </p>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-num" id="overviewProjCount">0</div>
+          <div class="stat-label">Restoration Projects</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="overviewCarbonSaved">0</div>
+          <div class="stat-label">Total Carbon Offset (kg)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="overviewSites">4</div>
+          <div class="stat-label">Monitored Regions</div>
+        </div>
+      </div>
+
+      <h2 style="font-size:20px; font-weight:700; color:#fff; margin:28px 0 16px;">🌊 Verified Marine Reservoirs</h2>
+      <div class="projects-grid" id="overviewList">
+        <p style="text-align:center; color:var(--text-dim); padding:30px; grid-column:span 3;">Loading ecosystem summary...</p>
+      </div>
+
+      <div style="margin-top:28px; text-align:center;">
+        <a href="addproject.html" class="btn-primary" style="display:inline-flex; width:auto; padding:12px 28px;">+ Register New Ecosystem Sink</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "index.html";
+    }
+
+    async function loadOverview() {
+      try {
+        const res = await fetch("/api/projects");
+        const projects = await res.json();
+
+        const totalCarbon = projects.reduce((sum, p) => sum + (Number(p.carbonSaved) || 0), 0);
+        document.getElementById("overviewProjCount").textContent = projects.length;
+        document.getElementById("overviewCarbonSaved").textContent = totalCarbon.toLocaleString();
+
+        const uniqueLocations = new Set(projects.map(p => p.location));
+        document.getElementById("overviewSites").textContent = Math.max(uniqueLocations.size, 1);
+
+        const list = document.getElementById("overviewList");
+        list.innerHTML = projects.map(p => `
+          <div class="project-item">
+            <div>
+              <span class="badge-pill" style="margin-bottom:8px;">● ${p.status || 'Active'}</span>
+              <h3 style="margin-top:6px;">${p.name}</h3>
+              <p style="color:var(--neon-lime); font-size:12px; margin:4px 0 8px;">📍 ${p.location}</p>
+              <p>${p.description}</p>
+            </div>
+            <div style="border-top:1px solid rgba(255,255,255,0.06); padding-top:12px;">
+              <span style="font-size:11px; color:var(--text-dim); display:block;">Certified Sequestration</span>
+              <strong style="color:var(--neon-lime); font-family:'JetBrains Mono';">${Number(p.carbonSaved).toLocaleString()} kg CO₂</strong>
+            </div>
+          </div>
+        `).join("");
+
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    loadOverview();
+  </script>
+</body>
 </html>

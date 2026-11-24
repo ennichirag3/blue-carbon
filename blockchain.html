@@ -1,8 +1,213 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="refresh" content="0; url=/#transfer">
-  <script>window.location.href = "/#transfer";</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blockchain – Blue Carbon Platform</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
 </head>
-<body>Redirecting to Spatial Blockchain Transfer...</body>
+<body>
+  <div class="spatial-bg"></div>
+
+  <div class="page-container" style="flex-direction: column; max-width: 1200px; margin: 0 auto;">
+    <!-- NAVBAR -->
+    <nav class="app-navbar">
+      <a href="dashboard.html" class="nav-brand">
+        <span style="color:var(--neon-lime);">🌿</span> Blue Carbon
+      </a>
+
+      <div class="nav-links-row">
+        <a href="dashboard.html" class="nav-tab-link">📊 Dashboard</a>
+        <a href="addproject.html" class="nav-tab-link">➕ Add Project</a>
+        <a href="allprojects.html" class="nav-tab-link">📂 All Projects</a>
+        <a href="blockchain.html" class="nav-tab-link active">🔗 Blockchain</a>
+        <a href="overview.html" class="nav-tab-link">🌿 Overview</a>
+        <a href="users.html" class="nav-tab-link">👥 Users</a>
+      </div>
+
+      <a href="dashboard.html" class="btn-secondary" style="padding:8px 16px;">← Back</a>
+    </nav>
+
+    <!-- 2-COLUMN LAYOUT -->
+    <div style="display:grid; grid-template-columns: 2fr 1fr; gap:24px;">
+      <!-- LEFT: WALLET & TRANSFER -->
+      <div class="glass-card">
+        <h2 style="font-size:22px; font-weight:800; color:#fff; margin-bottom:16px;">🔗 Blockchain Wallet</h2>
+        
+        <div class="form-group">
+          <label for="walletAddress">Wallet Address</label>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="walletAddress" placeholder="0x..." style="font-family:'JetBrains Mono';">
+            <button class="btn-secondary" onclick="getBalance()" style="white-space:nowrap;">Get Balance</button>
+          </div>
+        </div>
+        <p id="balanceDisplay" style="color:var(--neon-lime); font-family:'JetBrains Mono'; font-weight:700; margin-bottom:24px; min-height:20px;"></p>
+
+        <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:20px 0;">
+
+        <h3 style="font-size:18px; font-weight:700; color:#fff; margin-bottom:14px;">💰 Transfer ETH / Carbon Credits (BCX)</h3>
+        <form id="transferForm" onsubmit="event.preventDefault(); transferETH();">
+          <div class="form-group">
+            <label for="toAddress">Recipient Address</label>
+            <input type="text" id="toAddress" placeholder="0x..." required style="font-family:'JetBrains Mono';">
+          </div>
+
+          <div style="display:grid; grid-template-columns: 2fr 1fr; gap:14px;">
+            <div class="form-group">
+              <label for="amount">Amount</label>
+              <input type="number" step="0.0001" id="amount" placeholder="1.50" required>
+            </div>
+            <div class="form-group">
+              <label for="tokenSymbol">Token</label>
+              <select id="tokenSymbol" style="background:#111722;">
+                <option value="BCX">BCX</option>
+                <option value="ETH">ETH</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" id="transferBtn">🚀 Send Transaction</button>
+        </form>
+        <p id="txResult" style="color:var(--neon-lime); font-size:13px; margin-top:12px; font-family:'JetBrains Mono';"></p>
+
+        <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:24px 0;">
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h3 style="font-size:18px; font-weight:700; color:#fff;">📜 Transaction History</h3>
+          <button class="btn-secondary" style="padding:6px 14px; font-size:12px;" onclick="fetchHistory()">Refresh</button>
+        </div>
+
+        <div class="table-container">
+          <table class="glass-table" id="history-table">
+            <thead>
+              <tr>
+                <th>From</th>
+                <th>To</th>
+                <th>Amount</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody id="historyBody">
+              <tr><td colspan="4" style="text-align:center; color:var(--text-dim); padding:20px;">Loading history...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- RIGHT: BLOCKCHAIN SUMMARY INFO -->
+      <div class="glass-card" style="height:fit-content;">
+        <h2 style="font-size:22px; font-weight:800; color:#fff; margin-bottom:12px;">🌱 Ledger Status</h2>
+        <p style="color:var(--text-muted); font-size:14px; line-height:1.6; margin-bottom:20px;">
+          Cryptographic tokenization ensures transparent tracking of certified Blue Carbon offset units. Every transfer is cryptographically verified and permanently logged into the on-chain ledger.
+        </p>
+
+        <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06); margin-bottom:20px;">
+          <div style="font-size:11px; color:var(--text-dim); text-transform:uppercase; font-weight:600; margin-bottom:4px;">Node Connection</div>
+          <div id="nodeStatus" style="font-weight:700; color:var(--neon-lime); font-size:13px;">● Autonomous EVM Ledger</div>
+        </div>
+
+        <div style="background:rgba(0,0,0,0.3); padding:16px; border-radius:var(--radius-md); border:1px solid rgba(255,255,255,0.06); margin-bottom:24px;">
+          <div style="font-size:11px; color:var(--text-dim); text-transform:uppercase; font-weight:600; margin-bottom:4px;">Token Standard</div>
+          <div style="font-weight:700; color:#fff; font-size:13px;">ERC-20 Blue Carbon Credit (BCX)</div>
+        </div>
+
+        <a href="dashboard.html" class="btn-secondary" style="width:100%; text-align:center;">← Return to Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "index.html";
+    }
+
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const u = JSON.parse(storedUser);
+        if (u.walletAddress) {
+          document.getElementById("walletAddress").value = u.walletAddress;
+          getBalance();
+        }
+      } catch (e) {}
+    }
+
+    async function getBalance() {
+      const wallet = document.getElementById("walletAddress").value.trim();
+      const display = document.getElementById("balanceDisplay");
+      if (!wallet) return alert("Enter wallet address");
+      display.innerText = "⏳ Querying balance...";
+
+      try {
+        const res = await fetch(`/api/blockchain/balance/${wallet}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to fetch balance");
+        display.innerText = `Balance: ${data.balance} ETH / BCX`;
+      } catch (err) {
+        display.innerText = "❌ " + err.message;
+      }
+    }
+
+    async function transferETH() {
+      const to = document.getElementById("toAddress").value.trim();
+      const amount = parseFloat(document.getElementById("amount").value);
+      const tokenSymbol = document.getElementById("tokenSymbol").value;
+      const btn = document.getElementById("transferBtn");
+      const result = document.getElementById("txResult");
+
+      if (!to || !amount) return alert("Enter all fields correctly");
+
+      btn.disabled = true;
+      btn.textContent = "⏳ Broadcasting & Mining TX...";
+      result.textContent = "";
+
+      try {
+        const res = await fetch("/api/blockchain/transfer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ toAddress: to, amount, tokenSymbol })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Transfer failed");
+
+        result.textContent = `✅ Confirmed! Hash: ${data.txHash.slice(0, 16)}...`;
+        document.getElementById("amount").value = "";
+        fetchHistory();
+        getBalance();
+      } catch (err) {
+        result.textContent = "❌ " + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "🚀 Send Transaction";
+      }
+    }
+
+    async function fetchHistory() {
+      const tbody = document.getElementById("historyBody");
+      try {
+        const res = await fetch("/api/blockchain/history");
+        const txs = await res.json();
+        if (txs.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-dim); padding:20px;">No transactions recorded</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = txs.map(tx => `
+          <tr>
+            <td style="font-family:'JetBrains Mono'; font-size:12px; color:var(--neon-lime);">${tx.fromAddress ? tx.fromAddress.slice(0,8) + '...' : 'System'}</td>
+            <td style="font-family:'JetBrains Mono'; font-size:12px;">${tx.toAddress ? tx.toAddress.slice(0,8) + '...' : 'Recipient'}</td>
+            <td style="font-family:'JetBrains Mono'; font-weight:700;">${tx.amount} ${tx.tokenSymbol || 'BCX'}</td>
+            <td style="font-size:12px; color:var(--text-dim);">${tx.createdAt ? tx.createdAt.slice(0,10) : 'Today'}</td>
+          </tr>
+        `).join("");
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:var(--text-dim);">Failed to load history</td></tr>`;
+      }
+    }
+
+    fetchHistory();
+  </script>
+</body>
 </html>

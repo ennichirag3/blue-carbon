@@ -1,8 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="refresh" content="0; url=/#add-project">
-  <script>window.location.href = "/#add-project";</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Project – Blue Carbon Platform</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
 </head>
-<body>Redirecting to Register Project...</body>
+<body>
+  <div class="spatial-bg"></div>
+
+  <div class="page-container" style="flex-direction: column; max-width: 900px; margin: 0 auto;">
+    <!-- NAVBAR -->
+    <nav class="app-navbar">
+      <a href="dashboard.html" class="nav-brand">
+        <span style="color:var(--neon-lime);">🌿</span> Blue Carbon
+      </a>
+
+      <div class="nav-links-row">
+        <a href="dashboard.html" class="nav-tab-link">📊 Dashboard</a>
+        <a href="addproject.html" class="nav-tab-link active">➕ Add Project</a>
+        <a href="allprojects.html" class="nav-tab-link">📂 All Projects</a>
+        <a href="blockchain.html" class="nav-tab-link">🔗 Blockchain</a>
+        <a href="overview.html" class="nav-tab-link">🌿 Overview</a>
+        <a href="users.html" class="nav-tab-link">👥 Users</a>
+      </div>
+
+      <a href="dashboard.html" class="btn-secondary" style="padding:8px 16px;">← Back</a>
+    </nav>
+
+    <!-- FORM CARD -->
+    <div class="glass-card" id="addProjectCard">
+      <div style="text-align:center; margin-bottom:28px;">
+        <h1 style="font-size:28px; font-weight:800; color:#fff;">➕ Register Blue Carbon Project</h1>
+        <p style="color:var(--text-muted); font-size:14px; margin-top:4px;">
+          Add a coastal, tidal, or marine ecosystem restoration initiative for verification
+        </p>
+      </div>
+
+      <form id="addProjectForm">
+        <div class="form-group">
+          <label for="projectName">Project Name</label>
+          <input type="text" id="projectName" placeholder="e.g. Sundarbans Mangrove Tidal Restoration" required>
+        </div>
+
+        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+          <div class="form-group">
+            <label for="location">Location / Coordinates</label>
+            <input type="text" id="location" placeholder="e.g. Bay of Bengal, India" required>
+          </div>
+
+          <div class="form-group">
+            <label for="carbonSaved">Carbon Saved (kg CO₂)</label>
+            <input type="number" id="carbonSaved" placeholder="48500" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="description">Detailed Ecosystem Description</label>
+          <textarea id="description" rows="4" placeholder="Detail the mangrove species, tidal flow, baseline satellite imagery data, and community carbon credit allocations." required></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary" id="submitBtn">Save & Register Project</button>
+      </form>
+
+      <div class="error-msg" id="formStatus"></div>
+    </div>
+  </div>
+
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "index.html";
+    }
+
+    const form = document.getElementById("addProjectForm");
+    const status = document.getElementById("formStatus");
+    const submitBtn = document.getElementById("submitBtn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      status.textContent = "";
+
+      const name = document.getElementById("projectName").value.trim();
+      const location = document.getElementById("location").value.trim();
+      const carbonSaved = Number(document.getElementById("carbonSaved").value);
+      const description = document.getElementById("description").value.trim();
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Registering on SQLite...";
+
+      try {
+        const res = await fetch("/api/projects", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, location, carbonSaved, description })
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          status.style.color = "var(--neon-lime)";
+          status.textContent = "✅ Project registered successfully! Redirecting...";
+          setTimeout(() => {
+            window.location.href = "allprojects.html";
+          }, 600);
+        } else {
+          status.style.color = "#f87171";
+          status.textContent = data.message || "Failed to save project.";
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Save & Register Project";
+        }
+      } catch (err) {
+        status.style.color = "#f87171";
+        status.textContent = "Server error. Try again.";
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Save & Register Project";
+      }
+    });
+  </script>
+</body>
 </html>

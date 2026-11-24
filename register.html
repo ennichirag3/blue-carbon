@@ -1,8 +1,119 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta http-equiv="refresh" content="0; url=/#auth">
-  <script>window.location.href = "/#auth";</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register – Blue Carbon Platform</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
 </head>
-<body>Redirecting to Spatial Authentication...</body>
+<body>
+  <div class="spatial-bg"></div>
+
+  <div class="page-container">
+    <div class="glass-card auth-wrapper" id="registerCard">
+      <div class="auth-header">
+        <div class="brand-leaf-icon">✨</div>
+        <h1 class="auth-title">Create Account</h1>
+        <p class="auth-subtitle">Join the decentralized Blue Carbon registry</p>
+      </div>
+
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="name">Full Name</label>
+          <input type="text" id="name" placeholder="David Owner" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="david@cryptonest.io" required>
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="Minimum 8 characters" required>
+        </div>
+
+        <div class="form-group">
+          <label for="walletAddress">Wallet Address (Optional - auto-generated if empty)</label>
+          <input type="text" id="walletAddress" placeholder="0x...">
+        </div>
+
+        <button type="submit" class="btn-primary" id="regBtn">Register Account</button>
+      </form>
+
+      <div class="auth-footer-link">
+        Already have an account? <a href="index.html">Sign In here</a>
+      </div>
+
+      <div class="error-msg" id="regError"></div>
+    </div>
+  </div>
+
+  <script>
+    const registerForm = document.getElementById("registerForm");
+    const regError = document.getElementById("regError");
+    const regBtn = document.getElementById("regBtn");
+
+    registerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      regError.textContent = "";
+
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const walletAddress = document.getElementById("walletAddress").value.trim();
+
+      regBtn.disabled = true;
+      regBtn.textContent = "Creating Account...";
+
+      try {
+        const res = await fetch("/api/users/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, email, password, walletAddress })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          regError.textContent = data.message || "Registration failed. Try again.";
+          regBtn.disabled = false;
+          regBtn.textContent = "Register Account";
+          return;
+        }
+
+        // Save session credentials
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        // Smooth 3D exit transition
+        const card = document.getElementById("registerCard");
+        card.style.transform = "perspective(1200px) rotateX(-6deg) translateY(-20px) scale(0.96)";
+        card.style.opacity = "0";
+
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 300);
+
+      } catch (err) {
+        regError.textContent = "Server connection error. Please try again.";
+        regBtn.disabled = false;
+        regBtn.textContent = "Register Account";
+      }
+    });
+
+    // 3D Tilt micro-interaction
+    const card = document.getElementById("registerCard");
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      card.style.transform = `perspective(1000px) rotateX(${-y * 0.04}deg) rotateY(${x * 0.04}deg) scale3d(1.01, 1.01, 1.01)`;
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+    });
+  </script>
+</body>
 </html>

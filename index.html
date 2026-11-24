@@ -3,530 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CryptoNest · Blue Carbon Spatial 3D Platform</title>
-  <link rel="stylesheet" href="/public/css/spatial.css">
+  <title>Login – Blue Carbon Platform</title>
+  <link rel="stylesheet" href="style.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌿</text></svg>">
 </head>
 <body>
-  <!-- Ambient Spatial Glows and Subtle Background Depth -->
-  <div class="spatial-backdrop"></div>
-  <div class="ambient-glow glow-1"></div>
-  <div class="ambient-glow glow-2"></div>
+  <div class="spatial-bg"></div>
 
-  <div id="app">
-    <!-- LEFT FLOATING PILL SIDEBAR (Exact Match to Reference Image) -->
-    <aside class="glass-panel spatial-sidebar">
-      <div class="brand-header">
-        <div class="brand-icon-wrapper">
-          <span>🌿</span>
-        </div>
-        <div class="brand-title">
-          CryptoNest
-          <span class="brand-subtitle">Blue Carbon</span>
-        </div>
+  <div class="page-container">
+    <div class="glass-card auth-wrapper" id="loginCard">
+      <div class="auth-header">
+        <div class="brand-leaf-icon">🌿</div>
+        <h1 class="auth-title">🔑 Sign In</h1>
+        <p class="auth-subtitle">Access your Blue Carbon decentralized account</p>
       </div>
 
-      <nav class="nav-section">
-        <a href="#dashboard" class="nav-pill-btn active" data-view="dashboard">
-          <span class="nav-icon">⬚</span>
-          <span>Dashboard</span>
-        </a>
-        <a href="#deposit" class="nav-pill-btn" data-view="deposit">
-          <span class="nav-icon">📥</span>
-          <span>Deposit / Offset</span>
-        </a>
-        <a href="#transfer" class="nav-pill-btn" data-view="transfer">
-          <span class="nav-icon">📤</span>
-          <span>Withdrawal / Send</span>
-        </a>
-        <a href="#projects" class="nav-pill-btn" data-view="projects">
-          <span class="nav-icon">📊</span>
-          <span>Projects & MRV</span>
-        </a>
-        <a href="#add-project" class="nav-pill-btn" data-view="add-project">
-          <span class="nav-icon">💼</span>
-          <span>Register Project</span>
-        </a>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="admin@cryptonest.io" required autofocus>
+        </div>
 
-        <div class="nav-label">Trading Bots & MRV</div>
-        <a href="#dashboard" class="nav-pill-btn" data-view="dashboard">
-          <span class="nav-icon">🤖</span>
-          <span>My Trade</span>
-        </a>
-        <a href="#dashboard" class="nav-pill-btn" data-view="dashboard">
-          <span class="nav-icon">📈</span>
-          <span>Performance</span>
-        </a>
-        <a href="#dashboard" class="nav-pill-btn" data-view="dashboard">
-          <span class="nav-icon">🏆</span>
-          <span>Leader Boards</span>
-        </a>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="••••••••••••" required>
+        </div>
 
-        <div class="nav-label">Assets</div>
-        <a href="#transfer" class="nav-pill-btn" data-view="transfer">
-          <span class="nav-icon">💎</span>
-          <span>Assets Ethereum</span>
-          <span class="nav-asset-badge">$34,670</span>
-        </a>
-        <a href="#transfer" class="nav-pill-btn" data-view="transfer">
-          <span class="nav-icon">🌿</span>
-          <span>Assets Blue Carbon</span>
-          <span class="nav-asset-badge" id="sidebarCarbonVal">$12,450</span>
-        </a>
-      </nav>
-
-      <div class="sidebar-bottom">
-        <button id="logoutBtn" class="logout-pill-btn">
-          <span>🚪</span>
-          <span>Log Out</span>
+        <button type="submit" class="btn-primary" id="loginBtn">Sign In</button>
+        <button type="button" class="btn-secondary" id="demoBtn" style="width:100%; margin-top:12px;">
+          ⚡ Demo 1-Click Sign In (David Owner)
         </button>
+      </form>
+
+      <div class="auth-footer-link">
+        Don’t have an account? <a href="register.html">Register here</a>
       </div>
-    </aside>
 
-    <!-- MAIN VIEWPORT -->
-    <main class="main-viewport">
-      <!-- TOP SPATIAL APP BAR -->
-      <header class="top-app-bar">
-        <div class="search-glass-pill">
-          <span style="color:var(--text-dim); font-size:16px;">🔍</span>
-          <input type="text" placeholder="Search Here..." id="globalSearch">
-          <span class="shortcut-badge">⌘K</span>
-        </div>
-
-        <div class="top-bar-actions">
-          <button class="icon-pill-btn has-badge" title="Notifications">🔔</button>
-          <button class="icon-pill-btn" title="System Settings">⚙️</button>
-          
-          <div class="user-profile-pill" onclick="window.spatialApp.switchView('auth')">
-            <div class="avatar-img">DO</div>
-            <div class="user-info">
-              <span class="user-name">David Owner</span>
-              <span class="user-role">admin@cryptonest.io</span>
-            </div>
-            <span class="online-dot" title="Connected to EVM Node"></span>
-          </div>
-        </div>
-      </header>
-
-      <!-- DYNAMIC SPATIAL VIEWS CONTAINER (WITH 3D PAGE TRANSITIONS) -->
-      <div class="spatial-view-container">
-
-        <!-- ==============================================
-             1. DASHBOARD VIEW (MATCHES SCREENSHOT EXACTLY)
-             ============================================== -->
-        <section id="view-dashboard" class="spatial-view active">
-          <div class="dashboard-spatial-grid">
-
-            <!-- Card 1: Asset Price Card (BTC / USDT & Blue Carbon) -->
-            <div class="glass-panel price-metric-card">
-              <div class="card-top-row">
-                <div class="token-pair-badge">
-                  <span class="token-icon-orange">₿</span>
-                  <span>BTC / USDT</span>
-                </div>
-                <span class="card-sub-icon">⇅</span>
-              </div>
-
-              <div>
-                <div class="price-display-huge">24,657.09</div>
-              </div>
-
-              <div class="price-sub-metrics">
-                <span class="fiat-value">2,617,000 PLN</span>
-                <span class="change-pill-green">+24.78%</span>
-              </div>
-
-              <div class="price-footer-pills">
-                <button class="mini-glass-btn">Last Trade Price</button>
-                <button class="mini-glass-btn">Price (24h)</button>
-              </div>
-            </div>
-
-            <!-- Card 2: Overview Spline Chart Card -->
-            <div class="glass-panel overview-chart-card">
-              <div class="overview-header">
-                <h3 class="section-headline">
-                  <span>Overview</span>
-                  <span class="headline-dot"></span>
-                </h3>
-                <span style="font-size:12px; color:var(--text-dim); font-family:var(--font-mono);">Live Spline</span>
-              </div>
-              <div class="chart-wrapper">
-                <canvas id="overviewChartCanvas" class="spatial-chart"></canvas>
-              </div>
-            </div>
-
-            <!-- Card 3: Your Wallet Card with Exchange Button -->
-            <div class="glass-panel wallet-action-card">
-              <div class="wallet-header">
-                <h3 class="section-headline">Your Wallet</h3>
-                <div class="wallet-header-actions">
-                  <button class="btn-buy-sell" onclick="window.spatialApp.switchView('deposit')">Buy / Sell</button>
-                  <button class="btn-exchange-lime" id="btnExchangeAction">Exchange</button>
-                </div>
-              </div>
-
-              <div class="wallet-swap-row">
-                <div class="swap-coin-info">
-                  <span class="token-circle-avatar" style="background:linear-gradient(135deg, #a855f7, #6366f1)">◎</span>
-                  <div>
-                    <span style="font-size:11px; color:var(--text-dim); display:block;">Send</span>
-                    <strong style="font-size:13px; color:#fff;">SOL / ETH</strong>
-                  </div>
-                </div>
-                <div class="swap-balance-text">
-                  <span style="font-size:11px; color:var(--text-dim);">Balance: 234.42</span>
-                  <input type="text" id="swapSendAmount" value="43.42" style="background:transparent; border:none; color:var(--neon-lime); font-family:var(--font-mono); font-weight:700; text-align:right; width:80px; outline:none;">
-                </div>
-              </div>
-
-              <!-- Glowing Range Slider -->
-              <div class="spatial-slider-container">
-                <input type="range" class="slider-track" id="walletSlider" min="0" max="100" value="35">
-                <div class="slider-ticks">
-                  <span>0%</span>
-                  <span>25%</span>
-                  <span>50%</span>
-                  <span>75%</span>
-                  <span>100%</span>
-                </div>
-              </div>
-
-              <div class="wallet-swap-row">
-                <div class="swap-coin-info">
-                  <span class="token-circle-avatar" style="background:linear-gradient(135deg, #0ea5e9, #06b6d4)">$</span>
-                  <div>
-                    <span style="font-size:11px; color:var(--text-dim); display:block;">Receive</span>
-                    <strong style="font-size:13px; color:#fff;">USD / BCX</strong>
-                  </div>
-                </div>
-                <div class="swap-balance-text">
-                  <span style="font-size:11px; color:var(--text-dim);">Updated Balance: <span id="sliderBalanceVal">234.35</span></span>
-                  <input type="text" id="swapReceiveAmount" value="342.43" style="background:transparent; border:none; color:#fff; font-family:var(--font-mono); font-weight:700; text-align:right; width:80px; outline:none;" readonly>
-                </div>
-              </div>
-            </div>
-
-            <!-- Card 4: General Statistics Card with Signature Diagonal Stripes -->
-            <div class="glass-panel stats-chart-card">
-              <div class="stats-card-header">
-                <div>
-                  <h3 class="section-headline">General Statistics</h3>
-                </div>
-                <div style="display:flex; align-items:center; gap:20px;">
-                  <div class="chart-legend-group">
-                    <span class="legend-item"><span class="legend-dot dot-eth"></span> Ethereum 8%</span>
-                    <span class="legend-item"><span class="legend-dot dot-binance"></span> Binance 30%</span>
-                    <span class="legend-item"><span class="legend-dot dot-btc"></span> Bitcoin 40%</span>
-                    <span class="legend-item"><span class="legend-dot dot-carbon"></span> Blue Carbon 22%</span>
-                  </div>
-                  <button class="select-pill-glass">Monthly ▿</button>
-                </div>
-              </div>
-              <div style="height: 200px; width: 100%; position: relative;">
-                <canvas id="generalStatsCanvas" class="spatial-chart"></canvas>
-              </div>
-            </div>
-
-            <!-- Card 5: Daily Relative Dominance (3D Polar) -->
-            <div class="glass-panel dominance-chart-card">
-              <div class="card-top-row" style="margin-bottom:12px;">
-                <h3 class="section-headline">Daily relative Dominance</h3>
-                <span style="color:var(--text-dim); font-size:12px;">3D Reserve</span>
-              </div>
-              <div class="dominance-canvas-wrapper">
-                <canvas id="dominanceCanvas" class="spatial-chart"></canvas>
-              </div>
-            </div>
-
-            <!-- Card 6: History Table Card -->
-            <div class="glass-panel history-table-card">
-              <div class="history-card-header">
-                <div style="display:flex; align-items:center; gap:16px;">
-                  <h3 class="section-headline">
-                    <span>📜</span>
-                    <span>History</span>
-                  </h3>
-                  <div class="filter-pills-row">
-                    <button class="filter-pill active">All</button>
-                    <button class="filter-pill">1D</button>
-                    <button class="filter-pill">1W</button>
-                    <button class="filter-pill">1M</button>
-                    <button class="filter-pill">1Y</button>
-                  </div>
-                </div>
-
-                <div class="pagination-controls">
-                  <span>1 - 10 of 60</span>
-                  <button class="page-arrow-btn">‹</button>
-                  <button class="page-arrow-btn">›</button>
-                </div>
-              </div>
-
-              <div style="overflow-x:auto;">
-                <table class="spatial-table">
-                  <thead>
-                    <tr>
-                      <th>Date</th>
-                      <th>Trade</th>
-                      <th>Token Price</th>
-                      <th>Ledger / Parties</th>
-                      <th>Type</th>
-                      <th>Total Value</th>
-                      <th>Block #</th>
-                      <th>Action</th>
-                    </tr>
-                  </thead>
-                  <tbody id="historyTableBody">
-                    <!-- Populated dynamically via SQLite API -->
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-          </div>
-        </section>
-
-        <!-- ==============================================
-             2. BLOCKCHAIN WITHDRAWAL & TRANSFER VIEW
-             ============================================== -->
-        <section id="view-transfer" class="spatial-view">
-          <div style="max-width: 800px; margin: 0 auto; display:flex; flex-direction:column; gap:24px;">
-            <div class="glass-panel" style="padding: 32px;">
-              <h2 style="font-size:24px; font-weight:800; margin-bottom:8px;">🔗 EVM Blockchain Transfer</h2>
-              <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">
-                Send ETH or Blue Carbon Credits (BCX) with instant cryptographic verification, automatic nonce resolution, and permanent SQLite ledger recording.
-              </p>
-
-              <form id="blockchainTransferForm">
-                <div class="form-group-spatial">
-                  <label>Recipient Ethereum Address</label>
-                  <input type="text" class="input-spatial" id="transferToAddress" placeholder="0x70997970C51812dc3A010C7d01b50e0d17dc79C8" required>
-                </div>
-
-                <div style="display:grid; grid-template-columns: 2fr 1fr; gap:16px;">
-                  <div class="form-group-spatial">
-                    <label>Amount to Send</label>
-                    <input type="number" step="0.0001" class="input-spatial" id="transferAmount" placeholder="1.50" required>
-                  </div>
-                  <div class="form-group-spatial">
-                    <label>Token Asset</label>
-                    <select class="input-spatial" id="transferTokenSymbol" style="background:#111722;">
-                      <option value="BCX">BCX (Blue Carbon)</option>
-                      <option value="ETH">ETH (Ethereum)</option>
-                      <option value="BTC">BTC (Wrapped)</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="form-group-spatial">
-                  <label>Transfer Note / Project Memo</label>
-                  <input type="text" class="input-spatial" id="transferNote" placeholder="e.g. Sundarbans mangrove credit purchase">
-                </div>
-
-                <button type="submit" class="btn-spatial-primary">🚀 Send Transaction</button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <!-- ==============================================
-             3. DEPOSIT & OFFSET / RETIRE VIEW
-             ============================================== -->
-        <section id="view-deposit" class="spatial-view">
-          <div style="max-width: 800px; margin: 0 auto; display:flex; flex-direction:column; gap:24px;">
-            <div class="glass-panel" style="padding: 32px;">
-              <h2 style="font-size:24px; font-weight:800; margin-bottom:8px;">🌱 Blue Carbon Offset & Retirement</h2>
-              <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">
-                Permanently retire certified blue carbon credits to burn address <code style="color:var(--neon-lime);">0x000...dead</code> and generate an immutable carbon neutrality certificate.
-              </p>
-
-              <form id="offsetRetireForm">
-                <div class="form-group-spatial">
-                  <label>Certificate Beneficiary / Legal Entity Name</label>
-                  <input type="text" class="input-spatial" id="retireHolder" placeholder="e.g. David Owner / Acme Global Inc" required>
-                </div>
-
-                <div class="form-group-spatial">
-                  <label>Tons of CO₂ to Offset (1 BCX = 1 Ton)</label>
-                  <input type="number" step="0.1" class="input-spatial" id="retireAmount" placeholder="10.0" required>
-                </div>
-
-                <div class="form-group-spatial">
-                  <label>Retirement Reason & Scope</label>
-                  <input type="text" class="input-spatial" id="retireNote" placeholder="e.g. Annual Cloud Infrastructure Scope 1 & 2 Neutrality">
-                </div>
-
-                <button type="submit" class="btn-spatial-primary">🍃 Permanently Retire & Generate Certificate</button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <!-- ==============================================
-             4. PROJECTS & MRV VIEW
-             ============================================== -->
-        <section id="view-projects" class="spatial-view">
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <div>
-              <h2 style="font-size:24px; font-weight:800; color:#fff;">Verified Blue Carbon Ecosystems</h2>
-              <p style="color:var(--text-muted); font-size:13px;">High-density oceanic sinks monitored via multispectral satellite biomass imaging.</p>
-            </div>
-            <button class="btn-exchange-lime" onclick="window.spatialApp.switchView('add-project')">+ Register New Project</button>
-          </div>
-
-          <div class="projects-spatial-grid" id="projectsContainer">
-            <!-- Loaded dynamically from SQLite -->
-          </div>
-        </section>
-
-        <!-- ==============================================
-             5. REGISTER NEW PROJECT VIEW
-             ============================================== -->
-        <section id="view-add-project" class="spatial-view">
-          <div style="max-width: 800px; margin: 0 auto;">
-            <div class="glass-panel" style="padding: 32px;">
-              <h2 style="font-size:24px; font-weight:800; margin-bottom:8px;">🌿 Register Blue Carbon Sink Project</h2>
-              <p style="color:var(--text-muted); font-size:14px; margin-bottom:24px;">
-                Submit coastal wetland, mangrove, or kelp forest restoration projects for MRV carbon certification.
-              </p>
-
-              <form id="addProjectForm">
-                <div class="form-group-spatial">
-                  <label>Project Name</label>
-                  <input type="text" class="input-spatial" id="projName" placeholder="e.g. Bay of Bengal Mangrove Restoration" required>
-                </div>
-
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-                  <div class="form-group-spatial">
-                    <label>Geographic Location</label>
-                    <input type="text" class="input-spatial" id="projLocation" placeholder="e.g. Riau Archipelago, Indonesia" required>
-                  </div>
-                  <div class="form-group-spatial">
-                    <label>Ecosystem Category</label>
-                    <select class="input-spatial" id="projCategory" style="background:#111722;">
-                      <option value="Mangrove Restoration">Mangrove Restoration</option>
-                      <option value="Seagrass Meadows">Seagrass Meadows</option>
-                      <option value="Kelp Forests">Kelp Forests</option>
-                      <option value="Saltmarsh Wetlands">Saltmarsh Wetlands</option>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="form-group-spatial">
-                  <label>Initial Estimated Carbon Sequestration (kg CO₂)</label>
-                  <input type="number" class="input-spatial" id="projCarbon" placeholder="25000" required>
-                </div>
-
-                <div class="form-group-spatial">
-                  <label>Ecological Description</label>
-                  <textarea class="input-spatial" id="projDesc" rows="3" placeholder="Provide ecosystem characteristics, baseline satellite coordinates, and community impact." required></textarea>
-                </div>
-
-                <button type="submit" class="btn-spatial-primary">Submit for Verification</button>
-              </form>
-            </div>
-          </div>
-        </section>
-
-        <!-- ==============================================
-             6. AUTHENTICATION (3D FLIP CARD LOGIN / REGISTER)
-             ============================================== -->
-        <section id="view-auth" class="spatial-view">
-          <div class="auth-perspective-container">
-            <div class="auth-flip-card" id="authFlipCard">
-
-              <!-- FRONT: LOGIN FACE -->
-              <div class="glass-panel auth-card-face">
-                <div style="text-align:center; margin-bottom:20px;">
-                  <span style="font-size:36px; display:inline-block; margin-bottom:8px;">🔑</span>
-                  <h2 class="auth-title">Welcome Back</h2>
-                  <p class="auth-subtitle">Sign in to your CryptoNest Blue Carbon portal</p>
-                </div>
-
-                <form id="loginForm">
-                  <div class="form-group-spatial">
-                    <label>Email Address</label>
-                    <input type="email" class="input-spatial" id="loginEmail" placeholder="admin@cryptonest.io" required>
-                  </div>
-
-                  <div class="form-group-spatial">
-                    <label>Password</label>
-                    <input type="password" class="input-spatial" id="loginPassword" placeholder="••••••••••••" required>
-                  </div>
-
-                  <button type="submit" class="btn-spatial-primary">Sign In</button>
-                  <button type="button" class="btn-spatial-secondary" id="demoLoginBtn">⚡ Demo 1-Click Sign In (David Owner)</button>
-                </form>
-
-                <div class="auth-flip-trigger">
-                  Don't have an account?
-                  <a id="toRegisterTrigger">Create Account (3D Flip) →</a>
-                </div>
-              </div>
-
-              <!-- BACK: REGISTER FACE (180 DEG FLIPPED) -->
-              <div class="glass-panel auth-card-face auth-card-back">
-                <div style="text-align:center; margin-bottom:20px;">
-                  <span style="font-size:36px; display:inline-block; margin-bottom:8px;">✨</span>
-                  <h2 class="auth-title">Create Account</h2>
-                  <p class="auth-subtitle">Join the decentralized blue carbon network</p>
-                </div>
-
-                <form id="registerForm">
-                  <div class="form-group-spatial">
-                    <label>Full Name</label>
-                    <input type="text" class="input-spatial" id="regName" placeholder="David Owner" required>
-                  </div>
-
-                  <div class="form-group-spatial">
-                    <label>Email Address</label>
-                    <input type="email" class="input-spatial" id="regEmail" placeholder="david@cryptonest.io" required>
-                  </div>
-
-                  <div class="form-group-spatial">
-                    <label>Password</label>
-                    <input type="password" class="input-spatial" id="regPassword" placeholder="Minimum 8 characters" required>
-                  </div>
-
-                  <div class="form-group-spatial">
-                    <label>EVM Wallet Address (Optional - auto-generated if blank)</label>
-                    <input type="text" class="input-spatial" id="regWallet" placeholder="0x...">
-                  </div>
-
-                  <button type="submit" class="btn-spatial-primary">Create Account</button>
-                </form>
-
-                <div class="auth-flip-trigger">
-                  Already have an account?
-                  <a id="toLoginTrigger">← Back to Sign In</a>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </section>
-
-      </div>
-    </main>
-  </div>
-
-  <!-- QR CODE MODAL -->
-  <div id="qrModal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.75); backdrop-filter:blur(16px); align-items:center; justify-content:center;">
-    <div class="glass-panel" style="padding:32px; max-width:380px; width:90%; text-align:center;">
-      <h3 id="qrModalTitle" style="font-size:18px; font-weight:700; color:#fff; margin-bottom:16px;">Project Verification QR</h3>
-      <div style="background:#12171f; padding:16px; border-radius:18px; display:inline-block; border:1px solid rgba(189,247,43,0.3); margin-bottom:20px;">
-        <img id="qrModalImage" src="" alt="QR" style="width:200px; height:200px; display:block;">
-      </div>
-      <p style="font-size:12px; color:var(--text-muted); margin-bottom:20px;">Scan with mobile device or Web3 wallet for on-chain verification.</p>
-      <button class="btn-spatial-primary" onclick="document.getElementById('qrModal').style.display='none'">Close</button>
+      <div class="error-msg" id="loginError"></div>
     </div>
   </div>
 
-  <!-- TOAST NOTIFICATIONS -->
-  <div class="toast-spatial-container" id="toastContainer"></div>
+  <script>
+    // If user already logged in with valid token, allow seamless redirect
+    const token = localStorage.getItem("token");
+    if (token) {
+      // Optional quick check
+    }
 
-  <!-- JAVASCRIPT ENGINE -->
-  <script src="/public/js/spatial-engine.js"></script>
+    const loginForm = document.getElementById("loginForm");
+    const loginError = document.getElementById("loginError");
+    const loginBtn = document.getElementById("loginBtn");
+    const demoBtn = document.getElementById("demoBtn");
+
+    async function executeLogin(email, password) {
+      loginError.textContent = "";
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Verifying...";
+
+      try {
+        const res = await fetch("/api/users/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          loginError.textContent = data.message || "Invalid email or password.";
+          loginBtn.disabled = false;
+          loginBtn.textContent = "Sign In";
+          return;
+        }
+
+        // Save session credentials
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+
+        // Smooth 3D exit transition
+        const card = document.getElementById("loginCard");
+        card.style.transform = "perspective(1200px) rotateX(-6deg) translateY(-20px) scale(0.96)";
+        card.style.opacity = "0";
+
+        setTimeout(() => {
+          window.location.href = "dashboard.html";
+        }, 300);
+
+      } catch (err) {
+        loginError.textContent = "Server connection error. Please try again.";
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Sign In";
+      }
+    }
+
+    loginForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      executeLogin(email, password);
+    });
+
+    demoBtn.addEventListener("click", () => {
+      document.getElementById("email").value = "admin@cryptonest.io";
+      document.getElementById("password").value = "Password123!";
+      executeLogin("admin@cryptonest.io", "Password123!");
+    });
+
+    // 3D Tilt micro-interaction
+    const card = document.getElementById("loginCard");
+    card.addEventListener("mousemove", (e) => {
+      const rect = card.getBoundingClientRect();
+      const x = e.clientX - rect.left - rect.width / 2;
+      const y = e.clientY - rect.top - rect.height / 2;
+      card.style.transform = `perspective(1000px) rotateX(${-y * 0.04}deg) rotateY(${x * 0.04}deg) scale3d(1.01, 1.01, 1.01)`;
+    });
+    card.addEventListener("mouseleave", () => {
+      card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+    });
+  </script>
 </body>
 </html>
